@@ -3,6 +3,11 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <Nullable>enable</Nullable>
+        <RunPostBuildEvent>Always</RunPostBuildEvent>
     </PropertyGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+      <Exec Command="call &quot;../CopyToUnity.bat&quot;" />
+    </Target>
 
 </Project>

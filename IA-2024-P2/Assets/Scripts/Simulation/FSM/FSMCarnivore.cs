@@ -1,6 +1,6 @@
 namespace IA_Library_FSM
 {
-    public class StatesCarnivore
+    public class FSMCarnivore
     {
         
     }
