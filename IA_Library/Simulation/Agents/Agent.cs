@@ -28,8 +28,8 @@ namespace IA_Library_FSM
 
         public void SetBrain(Genome genome)
         {
-            neuralNetwork = new NeuralNetwork();
-            neuralNetwork.SetWeights(genome.genome);
+            //neuralNetwork = new NeuralNetwork();
+            //neuralNetwork.SetWeights(genome.genome);
         }
 
         public virtual void OnThink()
