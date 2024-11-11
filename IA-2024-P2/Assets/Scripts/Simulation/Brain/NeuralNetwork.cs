@@ -6,33 +6,19 @@ namespace IA_Library.Brain
     {
         private List<NeuronLayer> layers = new List<NeuronLayer>();
         private int totalWeightsCount = 0;
-        private int inputsCount = 0;
-
-        public int InputsCount
-        {
-            get { return inputsCount; }
-        }
 
         /// <summary>
         /// Creates a new Neuronal Network
         /// </summary>
-        /// <param name="inputsCount">Total inputs for the neuronal network</param>
         /// <param name="neuronsPerLayer">neurons per layer Example: {3,2,3} 3 entrance, 2 process, 3 output</param>
         /// <param name="bias"></param>
         /// <param name="p"></param>
-        public NeuralNetwork(int inputsCount, int[] neuronsPerLayer, float bias, float p)
+        public NeuralNetwork(int[] neuronsPerLayer, float bias, float p)
         {
-            Initialize(inputsCount, neuronsPerLayer, bias, p);
-        }
-
-        private void Initialize(int inputsCount, int[] neuronsPerLayer, float bias, float p)
-        {
-            this.inputsCount = inputsCount;
-
             for (int i = 0; i < neuronsPerLayer.Length; i++)
             {
                 int neuronsCount = neuronsPerLayer[i];
-                AddLayer(i == 0 ? inputsCount : layers[i - 1].OutputsCount, neuronsCount, bias, p);
+                AddLayer(i == 0 ? neuronsPerLayer[0] : layers[i - 1].OutputsCount, neuronsCount, bias, p);
             }
         }
 

@@ -6,14 +6,25 @@ namespace IA_Library.Brain
     {
         private Neuron[] neurons;
         private float[] outputs;
-        private int inputsCount;
-        private float bias;
-        private float p;
+        private int totalWeights = 0;
+        private int inputsCount = 0;
+        private float bias = 1;
+        private	float p = 0.5f;
 
-        public int NeuronsCount => neurons.Length;
-        public int InputsCount => inputsCount;
-        public int OutputsCount => outputs.Length;
-        public int TotalWeights => neurons.Length * (inputsCount + 1);
+        public int NeuronsCount
+        {
+            get { return neurons.Length; }
+        }
+
+        public int InputsCount
+        {
+            get { return inputsCount; }
+        }
+
+        public int OutputsCount
+        {
+            get { return outputs.Length; }
+        }
 
         public NeuronLayer(int inputsCount, int neuronsCount, float bias, float p)
         {
@@ -21,10 +32,17 @@ namespace IA_Library.Brain
             this.bias = bias;
             this.p = p;
 
+            SetNeuronsCount(neuronsCount);
+        }
+
+        void SetNeuronsCount(int neuronsCount)
+        {
             neurons = new Neuron[neuronsCount];
+
             for (int i = 0; i < neurons.Length; i++)
             {
-                neurons[i] = new Neuron(inputsCount + 1, bias, p, Sigmoid);
+                neurons[i] = new Neuron(inputsCount + 1, bias, p);
+                totalWeights += inputsCount + 1;
             }
 
             outputs = new float[neurons.Length];
@@ -42,15 +60,16 @@ namespace IA_Library.Brain
 
         public float[] GetWeights()
         {
-            float[] weights = new float[TotalWeights];
+            float[] weights = new float[totalWeights];
             int id = 0;
 
             for (int i = 0; i < neurons.Length; i++)
             {
-                float[] neuronWeights = neurons[i].GetWeights();
-                for (int j = 0; j < neuronWeights.Length; j++)
+                float[] ws = neurons[i].GetWeights();
+
+                for (int j = 0; j < ws.Length; j++)
                 {
-                    weights[id] = neuronWeights[j];
+                    weights[id] = ws[j];
                     id++;
                 }
             }
@@ -66,11 +85,6 @@ namespace IA_Library.Brain
             }
 
             return outputs;
-        }
-
-        private float Sigmoid(float a)
-        {
-            return 1.0f / (1.0f + MathF.Exp(-a / p));
         }
     }
 }

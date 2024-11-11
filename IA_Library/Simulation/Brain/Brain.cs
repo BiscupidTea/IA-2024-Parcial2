@@ -2,38 +2,43 @@ using System.Collections.Generic;
 
 namespace IA_Library.Brain
 {
-    public class NeuralNetwork
+    public class Brain
     {
-        private List<NeuronLayer> layers = new List<NeuronLayer>();
-        private int totalWeightsCount = 0;
-        private int inputsCount = 0;
+        List<NeuronLayer> layers = new List<NeuronLayer>();
+        int totalWeightsCount = 0;
+        int inputsCount = 0;
 
-        public int InputsCount
-        {
-            get { return inputsCount; }
-        }
+        public float[] outputs;
+        
+        private float fitness = 1;
+        public float FitnessReward;
+        public float FitnessMultiplier;
+        int fitnessCount = 0;
+    
+        public float bias = 1;
+        public	float p = 0.5f;
 
         /// <summary>
         /// Creates a new Neuronal Network
         /// </summary>
-        /// <param name="inputsCount">Total inputs for the neuronal network</param>
         /// <param name="neuronsPerLayer">neurons per layer Example: {3,2,3} 3 entrance, 2 process, 3 output</param>
         /// <param name="bias"></param>
         /// <param name="p"></param>
-        public NeuralNetwork(int inputsCount, int[] neuronsPerLayer, float bias, float p)
+        public Brain(int[] neuronsPerLayer, float bias, float p)
         {
-            Initialize(inputsCount, neuronsPerLayer, bias, p);
-        }
-
-        private void Initialize(int inputsCount, int[] neuronsPerLayer, float bias, float p)
-        {
-            this.inputsCount = inputsCount;
-
+            this.bias = bias;
+            this.p = p;
+            
             for (int i = 0; i < neuronsPerLayer.Length; i++)
             {
                 int neuronsCount = neuronsPerLayer[i];
-                AddLayer(i == 0 ? inputsCount : layers[i - 1].OutputsCount, neuronsCount, bias, p);
+                AddLayer(i == 0 ? neuronsPerLayer[0] : layers[i - 1].OutputsCount, neuronsCount, bias, p);
             }
+        }
+        
+        public void ApplyFitness()
+        {
+            fitness *= FitnessReward * FitnessMultiplier > 0 ? FitnessMultiplier : 0;
         }
 
         private void AddLayer(int inputsCount, int neuronsCount, float bias, float p)

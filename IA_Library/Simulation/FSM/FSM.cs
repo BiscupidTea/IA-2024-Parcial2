@@ -21,13 +21,13 @@ namespace IA_Library_FSM
         ParallelOptions parallelsOptions = new ParallelOptions() { MaxDegreeOfParallelism = 32 };
 
         private BehavioursActions GetCurrentStateOnEnterBehaviours => behaviours[currentState]
-            .GetOnEnterbehaviour(behaviourOnEnterParameters[currentState]?.Invoke());
+            .GetOnEnterBehaviour(behaviourOnEnterParameters[currentState]?.Invoke());
 
         private BehavioursActions GetCurrentStateOnExitBehaviours => behaviours[currentState]
-            .GetOnExitbehaviour(behaviourOnExitParameters[currentState]?.Invoke());
+            .GetOnExitBehaviour(behaviourOnExitParameters[currentState]?.Invoke());
 
         private BehavioursActions GetCurrentStateTickBehaviours => behaviours[currentState]
-            .GetTickbehaviour(behaviourTickParameters[currentState]?.Invoke());
+            .GetTickBehaviour(behaviourTickParameters[currentState]?.Invoke());
 
         public FSM()
         {

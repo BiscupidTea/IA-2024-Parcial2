@@ -2,18 +2,21 @@ using System;
 
 namespace IA_Library.Brain
 {
-    public class Neuron 
+    public class Neuron
     {
         private float[] weights;
         private float bias;
-        private float p;
-        private Func<float, float> activationFunc;
+        private float p; 
 
-        public int WeightsCount => weights.Length;
+        public int WeightsCount
+        {
+            get { return weights.Length; }
+        }
 
-        public Neuron(int weightsCount, float bias, float p, Func<float, float> activationFunc)
+        public Neuron(int weightsCount, float bias, float p)
         {
             weights = new float[weightsCount];
+
             Random rand = new Random();
             for (int i = 0; i < weights.Length; i++)
             {
@@ -22,28 +25,27 @@ namespace IA_Library.Brain
 
             this.bias = bias;
             this.p = p;
-            this.activationFunc = activationFunc ?? Sigmoid;
         }
 
-        public float Synapsis(float[] inputs)
+        public float Synapsis(float[] input)
         {
-            float sum = 0;
+            float a = 0;
 
-            for (int i = 0; i < inputs.Length; i++)
+            for (int i = 0; i < input.Length; i++)
             {
-                sum += weights[i] * inputs[i];
+                a += weights[i] * input[i];
             }
-            
-            sum += bias * weights[weights.Length - 1];
 
-            return activationFunc(sum);
+            a += bias * weights[weights.Length - 1];
+
+            return Sigmoid(a,p);
         }
 
         public int SetWeights(float[] newWeights, int fromId)
         {
             for (int i = 0; i < weights.Length; i++)
             {
-                weights[i] = newWeights[fromId + i];
+                this.weights[i] = newWeights[i + fromId];
             }
 
             return fromId + weights.Length;
@@ -51,15 +53,10 @@ namespace IA_Library.Brain
 
         public float[] GetWeights()
         {
-            float[] copy = new float[weights.Length];
-            for (int i = 0; i < weights.Length; i++)
-            {
-                copy[i] = weights[i];
-            }
-            return copy;
+            return this.weights;
         }
-        
-        private float Sigmoid(float a)
+	
+        public static float Sigmoid(float a,float p)
         {
             return 1.0f / (1.0f + MathF.Exp(-a / p));
         }

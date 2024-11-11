@@ -2,7 +2,7 @@ using System;
 
 namespace IA_Library.Brain
 {
-    public class Neuron
+    public class Neuron 
     {
         private float[] weights;
         private float bias;
@@ -17,7 +17,7 @@ namespace IA_Library.Brain
             Random rand = new Random();
             for (int i = 0; i < weights.Length; i++)
             {
-                weights[i] = (float)(rand.NextDouble() * 2 - 1); // RV (-1,1)
+                weights[i] = (float)(rand.NextDouble() * 2 - 1); // RandVal (-1,1)
             }
 
             this.bias = bias;
