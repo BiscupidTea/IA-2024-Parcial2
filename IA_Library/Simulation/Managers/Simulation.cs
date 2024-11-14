@@ -1,8 +1,17 @@
-﻿using IA_Library_FSM;
+﻿using System.Collections.Generic;
+using System.Numerics;
+using IA_Library_FSM;
 
 namespace IA_Library
 {
-    public class Simulation
+    public enum HerbivoreStates
+    {
+        Alive,
+        Death,
+        Corpse,
+    }
+    
+    public class Simulation<TypeAgent> where TypeAgent : Agent, new()
     {
         private AIManager<AgentHerbivore> Herbivore;
         private AIManager<AgentCarnivore> Carnivore;
@@ -30,12 +39,40 @@ namespace IA_Library
         {
         }
 
-        public void GetAgents()
+        public Dictionary<Vector2, HerbivoreStates> GetHerbivoreAgentsPositionsState()
         {
-        }
+            Dictionary<Vector2, HerbivoreStates> returnValue = new Dictionary<Vector2, HerbivoreStates>();
+            
+            foreach (AgentHerbivore agent in Herbivore.GetAgents())
+            {
+                returnValue.Add(agent.position, agent.GetState());
+            }
 
-        public void ReturnLogs()
+            return returnValue;
+        }
+        
+        public List<Vector2> GetCarnivoreAgentsPositions()
         {
+            List<Vector2> returnValue = new List<Vector2>();
+            
+            foreach (AgentCarnivore agent in Carnivore.GetAgents())
+            {
+                returnValue.Add(agent.position);
+            }
+
+            return returnValue;
+        }
+        
+        public List<Vector2> GetScavengerAgentsPositions()
+        {
+            List<Vector2> returnValue = new List<Vector2>();
+            
+            foreach (AgentScavenger agent in Scavenger.GetAgents())
+            {
+                returnValue.Add(agent.position);
+            }
+
+            return returnValue;
         }
     }
 }

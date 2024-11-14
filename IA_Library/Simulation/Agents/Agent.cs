@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Numerics;
+using IA_Library;
+using IA_Library_ECS;
 using IA_Library.Brain;
 
 namespace IA_Library_FSM
@@ -28,7 +30,7 @@ namespace IA_Library_FSM
         protected Brain mainBrain;
         protected FSM<Behaviours, Flags> fsmController;
 
-        protected Vector2 position;
+        public Vector2 position;
 
         protected bool hasEaten = false;
         protected int maxFood;
@@ -44,6 +46,11 @@ namespace IA_Library_FSM
         public abstract void ChooseNextState(float[] outputs);
         public abstract void MoveTo(Vector2 direction);
         public abstract Vector2 GetNearestFoodPosition();
+
+        public float[] GetMainBrainGenome()
+        {
+            return mainBrain.outputs;
+        }
     }
 
     public abstract class MoveState : State

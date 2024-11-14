@@ -58,7 +58,7 @@ namespace IA_Library.Brain
             }
         }
 
-        public float[] GetWeights()
+        public float[] GetGenome()
         {
             float[] weights = new float[totalWeightsCount];
             int id = 0;

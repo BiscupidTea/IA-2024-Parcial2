@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using IA_Library;
 using IA_Library.Brain;
 
 namespace IA_Library_FSM
@@ -12,8 +13,6 @@ namespace IA_Library_FSM
         private Brain eatBrain;
 
         private int maxMovementPerTurn = 3;
-        List<Vector2> nearEnemy = new List<Vector2>();
-        List<Vector2> nearFood = new List<Vector2>();
 
         private int lives = 3;
         private int insideFood;
@@ -121,25 +120,39 @@ namespace IA_Library_FSM
             }
         }
 
+        public void EatPiece()
+        {
+            insideFood--;
+            if (insideFood <= 0)
+            {
+                fsmController.ForcedState(Behaviours.Corpse);
+            }
+        }
+
         public bool CanBeEaten()
         {
-            //TODO: Plantearlo mejor
             if (fsmController.currentState == (int)Behaviours.Death)
             {
-                insideFood--;
-                if (insideFood <= 0)
-                {
-                    fsmController.ForcedState(Behaviours.Corpse);
-                }
-                else
-                {
-                    return false;
-                }
-
                 return true;
             }
 
             return false;
+        }
+
+        public HerbivoreStates GetState()
+        {
+            if (fsmController.currentState == (int)Behaviours.Death)
+            {
+                return HerbivoreStates.Death;
+            }
+            else if (fsmController.currentState == (int)Behaviours.Corpse)
+            {
+                return HerbivoreStates.Corpse;
+            }
+            else
+            {
+                return HerbivoreStates.Alive;
+            }
         }
     }
 

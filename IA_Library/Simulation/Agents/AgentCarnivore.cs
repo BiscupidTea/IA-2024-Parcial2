@@ -7,6 +7,9 @@ namespace IA_Library_FSM
 {
     public class AgentCarnivore : Agent
     {
+        private Brain moveToFoodBrain;
+        private Brain eatBrain;
+        
         public AgentCarnivore()
         {
             fsmController.AddBehaviour<MoveToEatCarnivoreState>(Behaviours.MoveToFood);
@@ -57,8 +60,8 @@ namespace IA_Library_FSM
             float[] outputs = parameters[0] as float[];
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
-            var onMove = parameters[3] as Action<Vector2[]>;
-            AgentHerbivore herbivore = parameters[4] as AgentHerbivore;
+            AgentHerbivore herbivore = parameters[3] as AgentHerbivore;
+            
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
                 if (position == nearFoodPos)
@@ -74,7 +77,6 @@ namespace IA_Library_FSM
 
                 foreach (Vector2 dir in direction)
                 {
-                    onMove.Invoke(direction);
                     position += dir;
                 }
 
@@ -117,12 +119,11 @@ namespace IA_Library_FSM
             float[] outputs = parameters[0] as float[];
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
-            bool hasEatenEnoughFood = (bool)parameters[3];
-            int counterEating = (int)parameters[4];
-            int maxEating = (int)parameters[5];
-            var onHasEatenEnoughFood = parameters[6] as Action<bool>;
-            var onEaten = parameters[7] as Action<int>;
-            AgentHerbivore herbivore = parameters[8] as AgentHerbivore;
+            AgentHerbivore herbivore = parameters[3] as AgentHerbivore;
+            bool maxEaten = (bool)parameters[4];
+            int currentFood = (int)parameters[5];
+            int maxEating = (int)parameters[6];
+            
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
                 if (herbivore == null)
@@ -132,33 +133,33 @@ namespace IA_Library_FSM
 
                 if (outputs[0] >= 0f)
                 {
-                    if (position == nearFoodPos && !hasEatenEnoughFood)
+                    if (position == nearFoodPos && !maxEaten)
                     {
                         if (herbivore.CanBeEaten())
                         {
-                            onEaten(++counterEating);
-                            
+                            herbivore.EatPiece();
+                            currentFood++;
+
                             brain.FitnessReward += 20;
-                            
-                            if (counterEating == maxEating)
+
+                            if (currentFood == maxEating)
                             {
                                 brain.FitnessReward += 30;
-                                onHasEatenEnoughFood.Invoke(true);
                             }
                         }
                     }
-                    else if (hasEatenEnoughFood || position != nearFoodPos)
+                    else if (maxEaten || position != nearFoodPos)
                     {
                         brain.FitnessMultiplier -= 0.05f;
                     }
                 }
                 else
                 {
-                    if (position == nearFoodPos && !hasEatenEnoughFood)
+                    if (position == nearFoodPos && !maxEaten)
                     {
                         brain.FitnessMultiplier -= 0.05f;
                     }
-                    else if (hasEatenEnoughFood)
+                    else if (maxEaten)
                     {
                         brain.FitnessMultiplier += 0.10f;
                     }

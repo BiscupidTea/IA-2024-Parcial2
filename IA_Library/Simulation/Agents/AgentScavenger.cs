@@ -5,14 +5,14 @@ namespace IA_Library_FSM
 {
     public class AgentScavenger : Agent
     {
-        protected Brain flockingBrain;
-        protected Brain moveFoodBrain;
-        protected Brain eatBrain;
+        private Brain flockingBrain;
+        private Brain moveToFoodBrain;
+        private Brain eatBrain;
 
         public AgentScavenger()
         {
             fsmController.AddBehaviour<MoveToEatScavengerState>(Behaviours.MoveToFood,
-                onTickParameters: () => { return new object[] { mainBrain, moveFoodBrain }; });
+                onTickParameters: () => { return new object[] { mainBrain, moveToFoodBrain }; });
             fsmController.AddBehaviour<EatScavengerState>(Behaviours.Eat,
                 onTickParameters: () => { return new object[] { mainBrain, eatBrain }; });
 

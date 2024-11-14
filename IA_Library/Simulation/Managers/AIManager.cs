@@ -38,7 +38,7 @@ namespace IA_Library
             {
                 CreateNextGeneration();
             }
-            
+
             foreach (TypeAgent currentAgent in agents)
             {
                 currentAgent.Update(deltaTime);
@@ -47,7 +47,19 @@ namespace IA_Library
 
         private void CreateNextGeneration()
         {
+            List<float[]> genomes = new List<float[]>();
+            
+            foreach (TypeAgent agent in agents)
+            {
+                genomes.Add(agent.GetMainBrainGenome());
+            }
 
+            geneticAlgorithmManager.Epoch()
+        }
+
+        public List<TypeAgent> GetAgents()
+        {
+            return agents;
         }
     }
 }
