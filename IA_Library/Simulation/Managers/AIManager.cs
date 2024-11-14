@@ -54,7 +54,7 @@ namespace IA_Library
                 genomes.Add(agent.GetMainBrainGenome());
             }
 
-            geneticAlgorithmManager.Epoch()
+            //geneticAlgorithmManager.Epoch()
         }
 
         public List<TypeAgent> GetAgents()

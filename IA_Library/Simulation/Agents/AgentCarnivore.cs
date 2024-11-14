@@ -9,24 +9,51 @@ namespace IA_Library_FSM
     {
         private Brain moveToFoodBrain;
         private Brain eatBrain;
-        
+
         public AgentCarnivore()
         {
-            fsmController.AddBehaviour<MoveToEatCarnivoreState>(Behaviours.MoveToFood);
-            fsmController.AddBehaviour<EatCarnivoreState>(Behaviours.Eat);
-            
+            fsmController.AddBehaviour<MoveToEatCarnivoreState>(Behaviours.MoveToFood,
+                onEnterParameters: () => { return new object[] { moveToFoodBrain }; },
+                onTickParameters: () =>
+                {
+                    return new object[]
+                    {
+                        moveToFoodBrain.outputs, position, GetNearestFoodPosition(), GetNearestFood()
+                    };
+                });
+
+            fsmController.AddBehaviour<EatCarnivoreState>(Behaviours.Eat,
+                onEnterParameters: () => { return new object[] { eatBrain }; },
+                onTickParameters: () =>
+                {
+                    return new object[]
+                    {
+                        eatBrain.outputs, position, GetNearestFoodPosition(), GetNearestFood(), hasEaten, currentFood,
+                        maxFood
+                    };
+                });
+
             fsmController.SetTransition(Behaviours.MoveToFood, Flags.OnTransitionEat, Behaviours.Eat);
             fsmController.SetTransition(Behaviours.Eat, Flags.OnTransitionMoveToEat, Behaviours.MoveToFood);
         }
 
         public override void Update(float deltaTime)
         {
+            ChooseNextState(mainBrain.outputs);
+            
             fsmController.Tick();
         }
-
+        
         public override void ChooseNextState(float[] outputs)
         {
-            throw new NotImplementedException();
+            if (outputs[0] > 0.0f)
+            {
+                fsmController.Transition(Flags.OnTransitionMoveToEat);
+            }
+            else if (outputs[1] > 0.0f)
+            {
+                fsmController.Transition(Flags.OnTransitionEat);
+            }
         }
 
         public override void MoveTo(Vector2 direction)
@@ -36,6 +63,12 @@ namespace IA_Library_FSM
 
         public override Vector2 GetNearestFoodPosition()
         {
+            throw new NotImplementedException();
+        }
+        
+        private AgentHerbivore GetNearestFood()
+        {
+            //TODO: hacer que busque su comida
             throw new NotImplementedException();
         }
     }
@@ -61,7 +94,7 @@ namespace IA_Library_FSM
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
             AgentHerbivore herbivore = parameters[3] as AgentHerbivore;
-            
+
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
                 if (position == nearFoodPos)
@@ -115,7 +148,7 @@ namespace IA_Library_FSM
         public override BehavioursActions GetTickBehaviour(params object[] parameters)
         {
             BehavioursActions behaviour = new BehavioursActions();
-            
+
             float[] outputs = parameters[0] as float[];
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
@@ -123,7 +156,7 @@ namespace IA_Library_FSM
             bool maxEaten = (bool)parameters[4];
             int currentFood = (int)parameters[5];
             int maxEating = (int)parameters[6];
-            
+
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
                 if (herbivore == null)
