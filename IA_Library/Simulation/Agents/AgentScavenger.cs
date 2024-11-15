@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 using IA_Library.Brain;
 
@@ -8,6 +9,8 @@ namespace IA_Library_FSM
         private Brain flockingBrain;
         private Brain moveToFoodBrain;
         private Brain eatBrain;
+
+        private float rotation;
 
         public AgentScavenger()
         {
@@ -45,8 +48,12 @@ namespace IA_Library_FSM
         }
     }
 
+    //todo:Terminar el move de esto
     public class MoveToEatScavengerState : MoveState
     {
+        private float previousDistance;
+        private float MinEatRadius;
+
         public override BehavioursActions GetOnEnterBehaviour(params object[] parameters)
         {
             throw new System.NotImplementedException();
@@ -54,7 +61,29 @@ namespace IA_Library_FSM
 
         public override BehavioursActions GetTickBehaviour(params object[] parameters)
         {
-            throw new System.NotImplementedException();
+            BehavioursActions behaviour = new BehavioursActions();
+
+            float[] outputs = parameters[0] as float[];
+            position = (Vector2)(parameters[1]);
+            Vector2 nearFoodPos = (Vector2)parameters[2];
+            MinEatRadius = (float)(parameters[3]);
+            
+            behaviour.AddMultitreadableBehaviours(0, () =>
+            {
+                List<Vector2> newPositions = new List<Vector2> { nearFoodPos };
+                float distanceFromFood = GetDistanceFrom(newPositions);
+
+                if (distanceFromFood < MinEatRadius)
+                {
+                    brain.FitnessReward += 1;
+                }
+                else if (distanceFromFood > MinEatRadius)
+                {
+                    brain.FitnessMultiplier -= 0.05f;
+                }
+            });
+
+            return behaviour;
         }
 
         public override BehavioursActions GetOnExitBehaviour(params object[] parameters)
@@ -69,60 +98,68 @@ namespace IA_Library_FSM
 
         public override BehavioursActions GetOnEnterBehaviour(params object[] parameters)
         {
-            float posX = (float)(parameters[0]);
-            float posY = (float)(parameters[1]);
-            float nearFoodRadius = (float)(parameters[2]);
-            bool hasEatenFood = (bool)parameters[3];
-            //insert parameters to brain;
-
+            brain = parameters[0] as Brain;
             return default;
         }
 
         public override BehavioursActions GetTickBehaviour(params object[] parameters)
         {
+            BehavioursActions behaviour = new BehavioursActions();
+            
             float[] outputs = parameters[0] as float[];
-            float posX = (float)(parameters[1]);
-            float posY = (float)(parameters[2]);
-            float nearFoodRadius = (float)(parameters[3]);
-            bool hasEatenFood = (bool)parameters[4];
-            //brain output;
+            float currentDistance = (float)parameters[1];
+            AgentHerbivore herbivore = parameters[2] as AgentHerbivore;
+            bool maxEaten = (bool)parameters[3];
+            int currentFood = (int)parameters[4];
+            int maxEating = (int)parameters[5];
 
-            if (outputs[0] >= 0f)
+            behaviour.AddMultitreadableBehaviours(0, () =>
             {
-                if (nearFoodRadius < MinEatRadius && !hasEatenFood)
+                if (herbivore == null)
                 {
-                    //Eat+
-                    //Fitness+
-                    //If comi 5
-                    // fitness skyrocket
-                    hasEatenFood = true;
+                    return;
                 }
-                else if (hasEatenFood)
-                {
-                    //Fitness-
-                }
-                else if (nearFoodRadius > MinEatRadius)
-                {
-                    //Fitness-
-                }
-            }
-            else
-            {
-                if (nearFoodRadius < MinEatRadius && !hasEatenFood)
-                {
-                    //fitness-
-                }
-                else if (hasEatenFood)
-                {
-                    //Fitness+   
-                }
-            }
 
-            return default;
+                if (outputs[0] >= 0f)
+                {
+                    if (currentDistance <= MinEatRadius && !maxEaten)
+                    {
+                        if (herbivore.CanBeEaten())
+                        {
+                            herbivore.EatPiece();
+                            currentFood++;
+
+                            brain.FitnessReward += 20;
+
+                            if (currentFood == maxEating)
+                            {
+                                brain.FitnessReward += 30;
+                            }
+                        }
+                    }
+                    else if (maxEaten || currentDistance > MinEatRadius)
+                    {
+                        brain.FitnessMultiplier -= 0.05f;
+                    }
+                }
+                else
+                {
+                    if (currentDistance <= MinEatRadius && !maxEaten)
+                    {
+                        brain.FitnessMultiplier -= 0.05f;
+                    }
+                    else if (maxEaten)
+                    {
+                        brain.FitnessMultiplier += 0.10f;
+                    }
+                }
+            });
+            return behaviour;
         }
 
         public override BehavioursActions GetOnExitBehaviour(params object[] parameters)
         {
+            brain.ApplyFitness();
             return default;
         }
     }
