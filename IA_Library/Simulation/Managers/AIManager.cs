@@ -20,7 +20,7 @@ namespace IA_Library
         /// <param name="mutationChance">(0.0/1.0)</param>
         /// <param name="mutationRate"></param>
         public AIManager(
-            GridManager grid, int totalPopulation, int totalElites,
+            int totalPopulation, int totalElites,
             float mutationChance, float mutationRate, float generationLifeTime)
         {
             for (int i = 0; i < totalPopulation; i++)

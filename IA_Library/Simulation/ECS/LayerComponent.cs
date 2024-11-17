@@ -7,19 +7,25 @@ namespace IA_Library_ECS
     public class Layer
     {
         public int neuronCount;
-        public float[][] weights;
+        public float[,] weights;
 
-        public Layer(int neuronCount, float[][] weights)
+        public Layer(int neuronCount, float[,] weights)
         {
             this.neuronCount = neuronCount;
             this.weights = weights;
+        }
+
+        public Layer(int neuronCount)
+        {
+            this.neuronCount = neuronCount;
         }
     }
 
     public class InputLayerComponent : LayerComponent
     {
         public Layer layer;
-
+        public int inputCount;
+        
         public InputLayerComponent(Layer layer)
         {
             this.layer = layer;
@@ -55,6 +61,7 @@ namespace IA_Library_ECS
             this.output = output;
         }
     }
+
     public class InputComponent : ECSComponent
     {
         public float[] inputs;

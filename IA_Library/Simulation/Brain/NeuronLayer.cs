@@ -1,15 +1,13 @@
-using System;
-
 namespace IA_Library.Brain
 {
     public class NeuronLayer
     {
-        private Neuron[] neurons;
+        public Neuron[] neurons;
         private float[] outputs;
         private int totalWeights = 0;
-        private int inputsCount = 0;
+        public int inputsCount = 0;
         private float bias = 1;
-        private	float p = 0.5f;
+        private float p = 0.5f;
 
         public int NeuronsCount
         {

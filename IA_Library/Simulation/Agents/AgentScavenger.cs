@@ -51,9 +51,6 @@ namespace IA_Library_FSM
     //todo:Terminar el move de esto
     public class MoveToEatScavengerState : MoveState
     {
-        private float previousDistance;
-        private float MinEatRadius;
-
         public override BehavioursActions GetOnEnterBehaviour(params object[] parameters)
         {
             throw new System.NotImplementedException();
@@ -66,18 +63,18 @@ namespace IA_Library_FSM
             float[] outputs = parameters[0] as float[];
             position = (Vector2)(parameters[1]);
             Vector2 nearFoodPos = (Vector2)parameters[2];
-            MinEatRadius = (float)(parameters[3]);
+            float minEatRadius = (float)(parameters[3]);
             
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
                 List<Vector2> newPositions = new List<Vector2> { nearFoodPos };
                 float distanceFromFood = GetDistanceFrom(newPositions);
 
-                if (distanceFromFood < MinEatRadius)
+                if (distanceFromFood < minEatRadius)
                 {
                     brain.FitnessReward += 1;
                 }
-                else if (distanceFromFood > MinEatRadius)
+                else if (distanceFromFood > minEatRadius)
                 {
                     brain.FitnessMultiplier -= 0.05f;
                 }
@@ -94,8 +91,6 @@ namespace IA_Library_FSM
 
     public class EatScavengerState : EatState
     {
-        protected float MinEatRadius;
-
         public override BehavioursActions GetOnEnterBehaviour(params object[] parameters)
         {
             brain = parameters[0] as Brain;
@@ -112,6 +107,7 @@ namespace IA_Library_FSM
             bool maxEaten = (bool)parameters[3];
             int currentFood = (int)parameters[4];
             int maxEating = (int)parameters[5];
+            float minEatRadius = (float)parameters[6];
 
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
@@ -122,7 +118,7 @@ namespace IA_Library_FSM
 
                 if (outputs[0] >= 0f)
                 {
-                    if (currentDistance <= MinEatRadius && !maxEaten)
+                    if (currentDistance <= minEatRadius && !maxEaten)
                     {
                         if (herbivore.CanBeEaten())
                         {
@@ -137,14 +133,14 @@ namespace IA_Library_FSM
                             }
                         }
                     }
-                    else if (maxEaten || currentDistance > MinEatRadius)
+                    else if (maxEaten || currentDistance > minEatRadius)
                     {
                         brain.FitnessMultiplier -= 0.05f;
                     }
                 }
                 else
                 {
-                    if (currentDistance <= MinEatRadius && !maxEaten)
+                    if (currentDistance <= minEatRadius && !maxEaten)
                     {
                         brain.FitnessMultiplier -= 0.05f;
                     }

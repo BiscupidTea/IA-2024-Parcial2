@@ -13,19 +13,19 @@ namespace IA_Library
     
     public class Simulation<TypeAgent> where TypeAgent : Agent, new()
     {
+        public int totalHervivores;
+        public int totalCarnivores;
+        public int totalScavengers;
+        
         private AIManager<AgentHerbivore> Herbivore;
         private AIManager<AgentCarnivore> Carnivore;
         private AIManager<AgentScavenger> Scavenger;
 
-        private GridManager grid;
-
         public void StartSimulation()
         {
-            grid = new GridManager(500, 500);
-
-            Herbivore = new AIManager<AgentHerbivore>(grid, 50, 5, 10, 10, 60);
-            Carnivore = new AIManager<AgentCarnivore>(grid, 30, 5, 10, 10, 60);
-            Scavenger = new AIManager<AgentScavenger>(grid, 30, 5, 10, 10, 60);
+            Herbivore = new AIManager<AgentHerbivore>(50, 5, 10, 10, 60);
+            Carnivore = new AIManager<AgentCarnivore>(30, 5, 10, 10, 60);
+            Scavenger = new AIManager<AgentScavenger>(30, 5, 10, 10, 60);
         }
 
         public void UpdateSimulation(float deltaTime)
