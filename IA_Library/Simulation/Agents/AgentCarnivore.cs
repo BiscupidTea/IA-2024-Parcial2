@@ -7,8 +7,8 @@ namespace IA_Library_FSM
 {
     public class AgentCarnivore : Agent
     {
-        private Brain moveToFoodBrain;
-        private Brain eatBrain;
+        public Brain moveToFoodBrain;
+        public Brain eatBrain;
 
         public AgentCarnivore()
         {
@@ -40,10 +40,10 @@ namespace IA_Library_FSM
         public override void Update(float deltaTime)
         {
             ChooseNextState(mainBrain.outputs);
-            
+
             fsmController.Tick();
         }
-        
+
         public override void ChooseNextState(float[] outputs)
         {
             if (outputs[0] > 0.0f)
@@ -65,7 +65,18 @@ namespace IA_Library_FSM
         {
             throw new NotImplementedException();
         }
-        
+
+        public override void SettingBrainUpdate(float deltaTime)
+        {
+            Vector2 nearestFoodPosition = GetNearestFoodPosition();
+
+            mainBrain.inputs = new[]
+                { position.X, position.Y, nearestFoodPosition.X, nearestFoodPosition.Y, hasEaten ? 1 : -1, };
+            moveToFoodBrain.inputs = new[] { position.X, position.Y, nearestFoodPosition.X, nearestFoodPosition.Y };
+            eatBrain.inputs = new[]
+                { position.X, position.Y, nearestFoodPosition.X, nearestFoodPosition.Y, hasEaten ? 1 : -1 };
+        }
+
         private AgentHerbivore GetNearestFood()
         {
             //TODO: hacer que busque su comida

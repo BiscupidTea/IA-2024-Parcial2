@@ -44,10 +44,5 @@ namespace IA_Library_FSM
         {
             throw new System.NotImplementedException();
         }
-
-        public override void SettingBrainUpdate(float deltaTime)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

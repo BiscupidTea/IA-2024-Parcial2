@@ -8,9 +8,9 @@ namespace IA_Library_FSM
 {
     public class AgentHerbivore : Agent
     {
-        private Brain moveToFoodBrain;
-        private Brain moveToEscapeBrain;
-        private Brain eatBrain;
+        public Brain moveToFoodBrain;
+        public Brain moveToEscapeBrain;
+        public Brain eatBrain;
 
         private int maxMovementPerTurn = 3;
 
@@ -103,6 +103,28 @@ namespace IA_Library_FSM
         {
             //TODO: hacer que busque su comida
             throw new NotImplementedException();
+        }
+
+        public override void SettingBrainUpdate(float deltaTime)
+        {
+            List<Vector2> enemies = GetNearestEnemiesPosition();
+            Vector2 nearestFoodPosition = GetNearestFoodPosition();
+
+            mainBrain.inputs = new[]
+            {
+                position.X, position.Y, nearestFoodPosition.X, nearestFoodPosition.Y, hasEaten ? 1 : -1,
+                enemies[0].X, enemies[0].Y, enemies[1].X, enemies[1].Y, enemies[2].X,
+                enemies[2].Y
+            };
+            moveToFoodBrain.inputs = new[] { position.X, position.Y, nearestFoodPosition.X, nearestFoodPosition.Y };
+            eatBrain.inputs = new[]
+                { position.X, position.Y, nearestFoodPosition.X, nearestFoodPosition.Y, hasEaten ? 1 : -1 };
+
+            moveToEscapeBrain.inputs = new[]
+            {
+                position.X, position.Y, enemies[0].X, enemies[0].Y, enemies[1].X, enemies[1].Y, enemies[2].X,
+                enemies[2].Y
+            };
         }
 
         private List<Vector2> GetNearestEnemiesPosition()

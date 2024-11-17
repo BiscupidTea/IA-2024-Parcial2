@@ -20,7 +20,7 @@ namespace IA_Library
         /// <param name="mutationChance">(0.0/1.0)</param>
         /// <param name="mutationRate"></param>
         public AIManager(
-            GridManager grid, int totalPopulation, int totalElites,
+            int totalPopulation, int totalElites,
             float mutationChance, float mutationRate, float generationLifeTime)
         {
             for (int i = 0; i < totalPopulation; i++)
@@ -32,29 +32,34 @@ namespace IA_Library
             geneticAlgorithmManager = new GeneticAlgorithm(totalElites, mutationChance, mutationRate);
         }
 
-        public void Update()
+        public void Update(float deltaTime)
         {
             if (timerGenerationLifeTime >= generationLifeTime)
             {
                 CreateNextGeneration();
             }
-            
+
             foreach (TypeAgent currentAgent in agents)
             {
-                currentAgent.Update();
+                currentAgent.Update(deltaTime);
             }
         }
 
         private void CreateNextGeneration()
         {
-            // List<Genome> genomes = new List<Genome>();
-            //
-            // foreach (var agent in agents)
-            // {
-            //     genomes.Add(agent.);
-            // }
-            //
-            // geneticAlgorithmManager.Epoch();
+            List<float[]> genomes = new List<float[]>();
+            
+            foreach (TypeAgent agent in agents)
+            {
+                genomes.Add(agent.GetMainBrainGenome());
+            }
+
+            //geneticAlgorithmManager.Epoch()
+        }
+
+        public List<TypeAgent> GetAgents()
+        {
+            return agents;
         }
     }
 }

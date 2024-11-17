@@ -53,8 +53,8 @@ namespace IA_Library_FSM
     public abstract class State
     {
         public Action<Enum> OnFlag;
-        public abstract BehavioursActions GetOnEnterbehaviour(params object[] parameters);
-        public abstract BehavioursActions GetTickbehaviour(params object[] parameters);
-        public abstract BehavioursActions GetOnExitbehaviour(params object[] parameters);
+        public abstract BehavioursActions GetOnEnterBehaviour(params object[] parameters);
+        public abstract BehavioursActions GetTickBehaviour(params object[] parameters);
+        public abstract BehavioursActions GetOnExitBehaviour(params object[] parameters);
     }
 }
