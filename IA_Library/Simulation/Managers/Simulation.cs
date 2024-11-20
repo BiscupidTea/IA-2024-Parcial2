@@ -16,7 +16,7 @@ namespace IA_Library
 
     public class Simulation
     {
-        private Vector2 grid;
+        private GridManager gridManager;
 
         private int totalHervivores;
         private int totalCarnivores;
@@ -51,12 +51,11 @@ namespace IA_Library
         public Simulation(Vector2 grid, int totalHervivores, int totalCarnivores, int totalScavengers,
             int totalElite, float mutationChance, float mutationRate, float generationLifeTime)
         {
-            this.grid.X = grid.X;
-            this.grid.Y = grid.Y;
+            gridManager = new GridManager(grid, 1);
             
             for (int i = 0; i < totalHervivores * 2; i++)
             {
-                Plants.Add(new AgentPlant(this));
+                Plants.Add(new AgentPlant(this, gridManager));
             }
 
             CreateEntities();
@@ -68,7 +67,7 @@ namespace IA_Library
         {
             for (int i = 0; i < totalHervivores; i++)
             {
-                Herbivore.Add(new AgentHerbivore(this));
+                Herbivore.Add(new AgentHerbivore(this, gridManager));
                 herbivoreMainBrain.Add(Herbivore[i].mainBrain);
                 herbivoreMoveFoodBrain.Add(Herbivore[i].moveToFoodBrain);
                 herbivoreMoveEscapeBrain.Add(Herbivore[i].moveToEscapeBrain);
@@ -77,7 +76,7 @@ namespace IA_Library
 
             for (int i = 0; i < totalCarnivores; i++)
             {
-                Carnivore.Add(new AgentCarnivore(this));
+                Carnivore.Add(new AgentCarnivore(this, gridManager));
                 carnivoreMainBrain.Add(Carnivore[i].mainBrain);
                 carnivoreMoveBrain.Add(Carnivore[i].moveToFoodBrain);
                 carnivoreEatBrain.Add(Carnivore[i].eatBrain);
@@ -85,7 +84,7 @@ namespace IA_Library
 
             for (int i = 0; i < totalScavengers; i++)
             {
-                Scavenger.Add(new AgentScavenger(this));
+                Scavenger.Add(new AgentScavenger(this, gridManager));
                 ScavengerMainBrain.Add(Scavenger[i].mainBrain);
                 ScavengerFlockingBrain.Add(Scavenger[i].flockingBrain);
             }

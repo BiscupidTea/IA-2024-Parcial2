@@ -11,15 +11,17 @@ namespace IA_Library_FSM
         public Brain moveToFoodBrain = new Brain();
         public Brain eatBrain = new Brain();
 
-        public AgentCarnivore(Simulation simulation) : base(simulation)
+        public AgentCarnivore(Simulation simulation, GridManager gridManager) : base(simulation, gridManager)
         {
+            Action<Vector2> onMove;
+
             fsmController.AddBehaviour<MoveToEatCarnivoreState>(Behaviours.MoveToFood,
                 onEnterParameters: () => { return new object[] { moveToFoodBrain }; },
                 onTickParameters: () =>
                 {
                     return new object[]
                     {
-                        moveToFoodBrain.outputs, position, GetNearestFoodPosition(), GetNearestFood()
+                        moveToFoodBrain.outputs, position, GetNearestFoodPosition(), GetNearestFood(), onMove = MoveTo
                     };
                 });
 
@@ -58,7 +60,7 @@ namespace IA_Library_FSM
 
         public override void MoveTo(Vector2 direction)
         {
-            throw new NotImplementedException();
+            position = gridManager.GetNewPositionInGrid(position, direction);
         }
 
         public override void SettingBrainUpdate(float deltaTime)
@@ -74,12 +76,12 @@ namespace IA_Library_FSM
 
         private AgentHerbivore GetNearestFood()
         {
-            return currentSimulation.GetNearestHerbivoreAgent(position);
+            return simulation.GetNearestHerbivoreAgent(position);
         }
         
         public override Vector2 GetNearestFoodPosition()
         {
-            return currentSimulation.GetNearestHerbivorePosition(position);
+            return simulation.GetNearestHerbivorePosition(position);
         }
     }
 
@@ -104,6 +106,7 @@ namespace IA_Library_FSM
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
             AgentHerbivore herbivore = parameters[3] as AgentHerbivore;
+            var onMove = parameters[4] as Action<Vector2[]>;
 
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
@@ -118,10 +121,7 @@ namespace IA_Library_FSM
                     direction[i] = GetDir(outputs[i]);
                 }
 
-                foreach (Vector2 dir in direction)
-                {
-                    position += dir;
-                }
+                onMove.Invoke(direction);
 
                 List<Vector2> newPositions = new List<Vector2> { nearFoodPos };
                 float distanceFromFood = GetDistanceFrom(newPositions);

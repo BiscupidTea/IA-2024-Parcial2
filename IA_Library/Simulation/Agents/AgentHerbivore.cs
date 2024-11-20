@@ -17,17 +17,18 @@ namespace IA_Library_FSM
         private int lives = 3;
         private int insideFood;
 
-        public AgentHerbivore(Simulation simulation) : base(simulation)
+        public AgentHerbivore(Simulation simulation, GridManager gridManager) : base(simulation, gridManager)
         {
             maxFood = 5;
-            
+            Action<Vector2> onMove;
+
             fsmController.AddBehaviour<MoveToEatHerbivoreState>(Behaviours.MoveToFood,
                 onEnterParameters: () => { return new object[] { moveToFoodBrain }; },
                 onTickParameters: () =>
                 {
                     return new object[]
                     {
-                        moveToFoodBrain.outputs, position, GetNearestFoodPosition()
+                        moveToFoodBrain.outputs, position, GetNearestFoodPosition(), onMove = MoveTo
                     };
                 });
 
@@ -48,7 +49,7 @@ namespace IA_Library_FSM
                 {
                     return new object[]
                     {
-                        moveToEscapeBrain.outputs, position, GetNearestEnemiesPosition()
+                        moveToEscapeBrain.outputs, position, GetNearestEnemiesPosition(), onMove = MoveTo
                     };
                 });
 
@@ -89,22 +90,22 @@ namespace IA_Library_FSM
 
         public override void MoveTo(Vector2 direction)
         {
-            position += direction;
+            position = gridManager.GetNewPositionInGrid(position, direction);
         }
 
         private AgentPlant GetNearestFood()
         {
-            return currentSimulation.GetNearestPlantAgents(position);
+            return simulation.GetNearestPlantAgents(position);
         }
 
         public override Vector2 GetNearestFoodPosition()
         {
-            return currentSimulation.GetNearestPlantPosition(position);
+            return simulation.GetNearestPlantPosition(position);
         }
-        
+
         private List<Vector2> GetNearestEnemiesPosition()
         {
-            return currentSimulation.GetNearestCarnivoresPositions(position, 3);
+            return simulation.GetNearestCarnivoresPositions(position, 3);
         }
 
         public override void SettingBrainUpdate(float deltaTime)
@@ -193,6 +194,7 @@ namespace IA_Library_FSM
             float[] outputs = parameters[0] as float[];
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
+            var onMove = parameters[3] as Action<Vector2[]>;
 
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
@@ -226,11 +228,7 @@ namespace IA_Library_FSM
 
                 if (movementPerTurn > 0)
                 {
-                    foreach (Vector2 dir in direction)
-                    {
-                        //TODO : CHEQUEAR SI ESTAS SALIENDO DEL MAPA
-                        position += dir;
-                    }
+                    onMove.Invoke(direction);
 
                     List<Vector2> newPositions = new List<Vector2>();
                     newPositions.Add(nearFoodPos);
@@ -315,12 +313,7 @@ namespace IA_Library_FSM
 
                 if (movementPerTurn > 0)
                 {
-                    foreach (Vector2 dir in direction)
-                    {
-                        onMove.Invoke(direction);
-                        position += dir;
-                        //Todo: Make a way to check the limit of the grid
-                    }
+                    onMove.Invoke(direction);
 
                     float distanceFromEnemies = GetDistanceFrom(nearEnemyPositions);
                     if (distanceFromEnemies <= previousDistance)

@@ -28,7 +28,8 @@ namespace IA_Library_FSM
     {
         public Brain mainBrain = new Brain();
         protected FSM<Behaviours, Flags> fsmController;
-        protected Simulation currentSimulation;
+        protected Simulation simulation;
+        protected GridManager gridManager;
 
         public Vector2 position;
 
@@ -36,11 +37,14 @@ namespace IA_Library_FSM
         protected int maxFood;
         protected int currentFood = 0;
 
-        public Agent(Simulation simulation)
+        public Agent(Simulation simulation, GridManager gridManager)
         {
             fsmController = new FSM<Behaviours, Flags>();
 
-            currentSimulation = simulation;
+            this.simulation = simulation;
+            this.gridManager = gridManager;
+            
+            position = gridManager.GetRandomValuePositionGrid();
         }
 
         public abstract void Update(float deltaTime);

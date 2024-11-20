@@ -8,7 +8,7 @@ namespace IA_Library_FSM
         private int lives = 5;
         private bool isAlive = true;
 
-        public AgentPlant(Simulation simulation) : base(simulation)
+        public AgentPlant(Simulation simulation, GridManager gridManager) : base(simulation, gridManager)
         {
         }
         
