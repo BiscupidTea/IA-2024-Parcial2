@@ -303,7 +303,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 20, y: 20, z: -40}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -338,6 +338,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 537ddef4ed6e9b341b955f91cf436ed0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridMaterial: {fileID: 2100000, guid: 42d907700bd2e9247a6ae65364f715bb, type: 2}
+  plantMaterial: {fileID: 2100000, guid: 284121e6dec889e428fb360107666d6d, type: 2}
+  herbivoreMaterial: {fileID: 2100000, guid: 1ad08f9eabd70084f933b6a62adacb44, type: 2}
+  carnivoreMaterial: {fileID: 2100000, guid: e80ae630617f5e34392f383623068819, type: 2}
+  scavengerMaterial: {fileID: 2100000, guid: a0be76efce977f340bbb45c090c06f2e, type: 2}
+  CubeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &1805888986
 Transform:
   m_ObjectHideFlags: 0

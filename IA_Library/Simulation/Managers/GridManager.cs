@@ -10,9 +10,10 @@ namespace IA_Library
 
         private Random random = new Random();
 
-        public GridManager(Vector2 size, float cellSize)
+        public GridManager(int X, int Y, float cellSize)
         {
-            this.size = size;
+            size.X = X;
+            size.Y = Y;
             this.cellSize = cellSize;
         }
 

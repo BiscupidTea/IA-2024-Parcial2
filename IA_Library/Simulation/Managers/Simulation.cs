@@ -16,9 +16,9 @@ namespace IA_Library
 
     public class Simulation
     {
-        private GridManager gridManager;
+        public GridManager gridManager;
 
-        private int totalHervivores;
+        private int totalHerbivores;
         private int totalCarnivores;
         private int totalScavengers;
         private int totalElite;
@@ -28,10 +28,10 @@ namespace IA_Library
 
         private float generationLifeTime;
 
-        private List<AgentHerbivore> Herbivore = new List<AgentHerbivore>();
-        private List<AgentCarnivore> Carnivore = new List<AgentCarnivore>();
-        private List<AgentScavenger> Scavenger = new List<AgentScavenger>();
-        private List<AgentPlant> Plants = new List<AgentPlant>();
+        public List<AgentHerbivore> Herbivore = new List<AgentHerbivore>();
+        public List<AgentCarnivore> Carnivore = new List<AgentCarnivore>();
+        public List<AgentScavenger> Scavenger = new List<AgentScavenger>();
+        public List<AgentPlant> Plants = new List<AgentPlant>();
 
         private List<Brain.Brain> herbivoreMainBrain = new List<Brain.Brain>();
         private List<Brain.Brain> herbivoreMoveFoodBrain = new List<Brain.Brain>();
@@ -48,16 +48,28 @@ namespace IA_Library
         private bool isActive;
         private Dictionary<uint, Brain.Brain> entities;
 
-        public Simulation(Vector2 grid, int totalHervivores, int totalCarnivores, int totalScavengers,
+        public Simulation(GridManager grid, int totalHerbivores, int totalCarnivores, int totalScavengers,
             int totalElite, float mutationChance, float mutationRate, float generationLifeTime)
         {
-            gridManager = new GridManager(grid, 1);
+            gridManager = grid;
+            
+            this.totalHerbivores = totalHerbivores;
+            this.totalCarnivores = totalCarnivores;
+            this.totalScavengers = totalScavengers;
+            
+            this.totalElite = totalElite;
+            this.mutationChance = mutationChance;
+            this.mutationRate = mutationRate;
+            
+            this.generationLifeTime = generationLifeTime;
 
-            for (int i = 0; i < totalHervivores * 2; i++)
+            for (int i = 0; i < totalHerbivores * 2; i++)
             {
                 Plants.Add(new AgentPlant(this, gridManager));
             }
 
+            ECSManager.Init();
+            
             CreateEntities();
             entities = new Dictionary<uint, Brain.Brain>();
             CreateECSEntities();
@@ -65,7 +77,7 @@ namespace IA_Library
 
         private void CreateEntities()
         {
-            for (int i = 0; i < totalHervivores; i++)
+            for (int i = 0; i < totalHerbivores; i++)
             {
                 Herbivore.Add(new AgentHerbivore(this, gridManager));
                 herbivoreMainBrain.Add(Herbivore[i].mainBrain);
@@ -92,7 +104,7 @@ namespace IA_Library
 
         private void CreateECSEntities()
         {
-            for (int i = 0; i < totalHervivores; i++)
+            for (int i = 0; i < totalHerbivores; i++)
             {
                 CreateEntity(Herbivore[i].mainBrain);
                 CreateEntity(Herbivore[i].moveToFoodBrain);
@@ -313,45 +325,5 @@ namespace IA_Library
 
             return sortedScavengers;
         }
-
-        #region GetAgents
-
-        public Dictionary<Vector2, HerbivoreStates> GetHerbivoreAgentsPositionsState()
-        {
-            Dictionary<Vector2, HerbivoreStates> returnValue = new Dictionary<Vector2, HerbivoreStates>();
-
-            foreach (AgentHerbivore agent in Herbivore)
-            {
-                returnValue.Add(agent.position, agent.GetState());
-            }
-
-            return returnValue;
-        }
-
-        public List<Vector2> GetCarnivoreAgentsPositions()
-        {
-            List<Vector2> returnValue = new List<Vector2>();
-
-            foreach (AgentCarnivore agent in Carnivore)
-            {
-                returnValue.Add(agent.position);
-            }
-
-            return returnValue;
-        }
-
-        public List<Vector2> GetScavengerAgentsPositions()
-        {
-            List<Vector2> returnValue = new List<Vector2>();
-
-            foreach (AgentScavenger agent in Scavenger)
-            {
-                returnValue.Add(agent.position);
-            }
-
-            return returnValue;
-        }
-
-        #endregion
     }
 }

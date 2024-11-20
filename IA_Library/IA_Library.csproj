@@ -6,8 +6,4 @@
         <RunPostBuildEvent>Always</RunPostBuildEvent>
     </PropertyGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-      <Exec Command="call &quot;../CopyToUnity.bat&quot;" />
-    </Target>
-
 </Project>
