@@ -1,4 +1,5 @@
 using System.Numerics;
+using IA_Library;
 
 namespace IA_Library_FSM
 {
@@ -7,6 +8,10 @@ namespace IA_Library_FSM
         private int lives = 5;
         private bool isAlive = true;
 
+        public AgentPlant(Simulation simulation) : base(simulation)
+        {
+        }
+        
         public void Eat()
         {
             if (isAlive)

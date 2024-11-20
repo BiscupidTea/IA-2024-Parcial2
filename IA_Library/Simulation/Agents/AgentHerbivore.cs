@@ -8,16 +8,16 @@ namespace IA_Library_FSM
 {
     public class AgentHerbivore : Agent
     {
-        public Brain moveToFoodBrain;
-        public Brain moveToEscapeBrain;
-        public Brain eatBrain;
+        public Brain moveToFoodBrain = new Brain();
+        public Brain moveToEscapeBrain = new Brain();
+        public Brain eatBrain = new Brain();
 
         private int maxMovementPerTurn = 3;
 
         private int lives = 3;
         private int insideFood;
 
-        public AgentHerbivore()
+        public AgentHerbivore(Simulation simulation) : base(simulation)
         {
             maxFood = 5;
             
@@ -68,7 +68,6 @@ namespace IA_Library_FSM
         public override void Update(float deltaTime)
         {
             ChooseNextState(mainBrain.outputs);
-
             fsmController.Tick();
         }
 
@@ -95,14 +94,17 @@ namespace IA_Library_FSM
 
         private AgentPlant GetNearestFood()
         {
-            //TODO: hacer que busque su comida
-            throw new NotImplementedException();
+            return currentSimulation.GetNearestPlantAgents(position);
         }
 
         public override Vector2 GetNearestFoodPosition()
         {
-            //TODO: hacer que busque su comida
-            throw new NotImplementedException();
+            return currentSimulation.GetNearestPlantPosition(position);
+        }
+        
+        private List<Vector2> GetNearestEnemiesPosition()
+        {
+            return currentSimulation.GetNearestCarnivoresPositions(position, 3);
         }
 
         public override void SettingBrainUpdate(float deltaTime)
@@ -125,12 +127,6 @@ namespace IA_Library_FSM
                 position.X, position.Y, enemies[0].X, enemies[0].Y, enemies[1].X, enemies[1].Y, enemies[2].X,
                 enemies[2].Y
             };
-        }
-
-        private List<Vector2> GetNearestEnemiesPosition()
-        {
-            //TODO: hacer que busque a los carnivoros
-            throw new NotImplementedException();
         }
 
         public void ReceiveDamage()

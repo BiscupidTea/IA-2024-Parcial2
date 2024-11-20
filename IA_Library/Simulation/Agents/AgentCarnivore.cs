@@ -1,16 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using IA_Library;
 using IA_Library.Brain;
 
 namespace IA_Library_FSM
 {
     public class AgentCarnivore : Agent
     {
-        public Brain moveToFoodBrain;
-        public Brain eatBrain;
+        public Brain moveToFoodBrain = new Brain();
+        public Brain eatBrain = new Brain();
 
-        public AgentCarnivore()
+        public AgentCarnivore(Simulation simulation) : base(simulation)
         {
             fsmController.AddBehaviour<MoveToEatCarnivoreState>(Behaviours.MoveToFood,
                 onEnterParameters: () => { return new object[] { moveToFoodBrain }; },
@@ -40,7 +41,6 @@ namespace IA_Library_FSM
         public override void Update(float deltaTime)
         {
             ChooseNextState(mainBrain.outputs);
-
             fsmController.Tick();
         }
 
@@ -61,11 +61,6 @@ namespace IA_Library_FSM
             throw new NotImplementedException();
         }
 
-        public override Vector2 GetNearestFoodPosition()
-        {
-            throw new NotImplementedException();
-        }
-
         public override void SettingBrainUpdate(float deltaTime)
         {
             Vector2 nearestFoodPosition = GetNearestFoodPosition();
@@ -79,8 +74,12 @@ namespace IA_Library_FSM
 
         private AgentHerbivore GetNearestFood()
         {
-            //TODO: hacer que busque su comida
-            throw new NotImplementedException();
+            return currentSimulation.GetNearestHerbivoreAgent(position);
+        }
+        
+        public override Vector2 GetNearestFoodPosition()
+        {
+            return currentSimulation.GetNearestHerbivorePosition(position);
         }
     }
 

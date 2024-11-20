@@ -209,7 +209,7 @@ namespace IA_Library
             return nearestPoint;
         }
         
-        public Vector2 GetNearestPlantPositions(Vector2 position)
+        public Vector2 GetNearestPlantPosition(Vector2 position)
         {
             AgentPlant nearestPoint = Plants[0];
             float minDistanceSquared = (Plants[0].position.X - position.X) * (Plants[0].position.X - position.X) +

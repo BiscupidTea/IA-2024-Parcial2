@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Numerics;
+using IA_Library;
 using IA_Library.Brain;
 
 namespace IA_Library_FSM
@@ -25,8 +26,9 @@ namespace IA_Library_FSM
 
     public abstract class Agent
     {
-        public Brain mainBrain;
+        public Brain mainBrain = new Brain();
         protected FSM<Behaviours, Flags> fsmController;
+        protected Simulation currentSimulation;
 
         public Vector2 position;
 
@@ -34,10 +36,11 @@ namespace IA_Library_FSM
         protected int maxFood;
         protected int currentFood = 0;
 
-
-        public Agent()
+        public Agent(Simulation simulation)
         {
             fsmController = new FSM<Behaviours, Flags>();
+
+            currentSimulation = simulation;
         }
 
         public abstract void Update(float deltaTime);
