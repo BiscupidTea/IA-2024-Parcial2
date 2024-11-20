@@ -52,7 +52,7 @@ namespace IA_Library
             int totalElite, float mutationChance, float mutationRate, float generationLifeTime)
         {
             gridManager = new GridManager(grid, 1);
-            
+
             for (int i = 0; i < totalHervivores * 2; i++)
             {
                 Plants.Add(new AgentPlant(this, gridManager));
@@ -193,7 +193,7 @@ namespace IA_Library
             AgentPlant nearestPoint = Plants[0];
             float minDistanceSquared = (Plants[0].position.X - position.X) * (Plants[0].position.X - position.X) +
                                        (Plants[0].position.Y - position.Y) * (Plants[0].position.Y - position.Y);
-    
+
             foreach (AgentPlant point in Plants)
             {
                 float distanceSquared = (point.position.X - position.X) * (point.position.X - position.X) +
@@ -207,13 +207,13 @@ namespace IA_Library
 
             return nearestPoint;
         }
-        
+
         public Vector2 GetNearestPlantPosition(Vector2 position)
         {
             AgentPlant nearestPoint = Plants[0];
             float minDistanceSquared = (Plants[0].position.X - position.X) * (Plants[0].position.X - position.X) +
                                        (Plants[0].position.Y - position.Y) * (Plants[0].position.Y - position.Y);
-    
+
             foreach (AgentPlant point in Plants)
             {
                 float distanceSquared = (point.position.X - position.X) * (point.position.X - position.X) +
@@ -227,7 +227,7 @@ namespace IA_Library
 
             return nearestPoint.position;
         }
-        
+
         public List<Vector2> GetNearestCarnivoresPositions(Vector2 position, int count)
         {
             var sortedCarnivores = Carnivore
@@ -239,13 +239,13 @@ namespace IA_Library
 
             return sortedCarnivores;
         }
-        
+
         public AgentHerbivore GetNearestHerbivoreAgent(Vector2 position)
         {
             AgentHerbivore nearestPoint = Herbivore[0];
             float minDistanceSquared = (Herbivore[0].position.X - position.X) * (Herbivore[0].position.X - position.X) +
                                        (Herbivore[0].position.Y - position.Y) * (Herbivore[0].position.Y - position.Y);
-    
+
             foreach (var point in Herbivore)
             {
                 float distanceSquared = (point.position.X - position.X) * (point.position.X - position.X) +
@@ -259,13 +259,13 @@ namespace IA_Library
 
             return nearestPoint;
         }
-        
+
         public Vector2 GetNearestHerbivorePosition(Vector2 position)
         {
             AgentHerbivore nearestPoint = Herbivore[0];
             float minDistanceSquared = (Herbivore[0].position.X - position.X) * (Herbivore[0].position.X - position.X) +
                                        (Herbivore[0].position.Y - position.Y) * (Herbivore[0].position.Y - position.Y);
-    
+
             foreach (var point in Herbivore)
             {
                 float distanceSquared = (point.position.X - position.X) * (point.position.X - position.X) +
@@ -279,36 +279,35 @@ namespace IA_Library
 
             return nearestPoint.position;
         }
-        
+
         public Vector2 GetNearestDeadHerbivorePosition(Vector2 position)
         {
             AgentHerbivore nearestPoint = null;
             float minDistanceSquared = float.MaxValue;
-    
+
             foreach (var point in Herbivore)
             {
                 if (!point.CanBeEaten())
                     continue;
-                
+
                 float distanceSquared = (point.position.X - position.X) * (point.position.X - position.X) +
                                         (point.position.Y - position.Y) * (point.position.Y - position.Y);
-                
+
                 if (distanceSquared < minDistanceSquared)
                 {
                     minDistanceSquared = distanceSquared;
                     nearestPoint = point;
                 }
             }
-            
+
             return nearestPoint.position;
         }
-        
-        public List<Vector2> GetNearestScavengersPositions(Vector2 position, int count)
+
+        public List<AgentScavenger> GetNearestScavengers(Vector2 position, int count)
         {
-            List<Vector2> sortedScavengers = Scavenger
+            List<AgentScavenger> sortedScavengers = Scavenger
                 .OrderBy(h => (h.position.X - position.X) * (h.position.X - position.X) +
                               (h.position.Y - position.Y) * (h.position.Y - position.Y))
-                .Select(h => h.position)
                 .Take(Math.Min(count, Carnivore.Count))
                 .ToList();
 
