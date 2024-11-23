@@ -8,7 +8,7 @@ namespace IA_Library_FSM
         private int lives = 5;
         private bool isAlive = true;
 
-        public AgentPlant(Simulation simulation, GridManager gridManager) : base(simulation, gridManager)
+        public AgentPlant(Simulation simulation, GridManager gridManager) : base(simulation, gridManager, null)
         {
         }
         
@@ -29,7 +29,12 @@ namespace IA_Library_FSM
         {
             return lives > 0;
         }
-        
+
+        public override void Reset()
+        {
+            this.position = position;
+        }
+
         public override void Update(float deltaTime)
         {
             throw new System.NotImplementedException();

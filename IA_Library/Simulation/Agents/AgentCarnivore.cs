@@ -11,10 +11,14 @@ namespace IA_Library_FSM
         public Brain moveToFoodBrain = new Brain();
         public Brain eatBrain = new Brain();
 
-        public AgentCarnivore(Simulation simulation, GridManager gridManager) : base(simulation, gridManager)
+        public AgentCarnivore(Simulation simulation, GridManager gridManager,
+            Brain mainBrain, Brain moveToFoodBrain, Brain eatBrain) : base(simulation, gridManager, mainBrain)
         {
             Action<Vector2> onMove;
 
+            this.moveToFoodBrain = moveToFoodBrain;
+            this.eatBrain = eatBrain;
+            
             fsmController.AddBehaviour<MoveToEatCarnivoreState>(Behaviours.MoveToFood,
                 onEnterParameters: () => { return new object[] { moveToFoodBrain }; },
                 onTickParameters: () =>
@@ -46,6 +50,24 @@ namespace IA_Library_FSM
             fsmController.Tick();
         }
 
+        public override void Reset()
+        {
+            mainBrain.FitnessMultiplier = 1;
+            mainBrain.FitnessReward = 0;
+            
+            moveToFoodBrain.FitnessMultiplier = 1;
+            moveToFoodBrain.FitnessReward = 0;
+            
+            eatBrain.FitnessMultiplier = 1;
+            eatBrain.FitnessReward = 0;
+            
+            currentFood = 0;
+            hasEaten = false;
+            position = gridManager.GetRandomValuePositionGrid();
+            
+            fsmController.ForcedState(Behaviours.MoveToFood);
+        }
+        
         public override void ChooseNextState(float[] outputs)
         {
             if (outputs[0] > 0.0f)
