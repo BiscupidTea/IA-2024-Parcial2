@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace IA_Library_ECS
@@ -137,7 +134,15 @@ namespace IA_Library_ECS
             int exclusive = outputLayerComponent[entity].layer.weights.GetLength(1);
             for (int i = 0; i < exclusive; i++)
             {
-                a += outputLayerComponent[entity].layer.weights[neuron, i] * inputs[i];
+                try
+                {
+                    a += outputLayerComponent[entity].layer.weights[neuron, i] * inputs[i];
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
 
             a += biasComponent[entity].X;

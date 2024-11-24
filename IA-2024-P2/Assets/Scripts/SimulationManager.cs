@@ -1,23 +1,19 @@
-using System;
 using System.Collections.Generic;
 using IA_Library;
 using IA_Library_FSM;
 using IA_Library.Brain;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class SimulationManager : MonoBehaviour
 {
     private Simulation simulation;
-
-    public Material gridMaterial;
+    
     public Material plantMaterial;
     public Material herbivoreMaterial;
     public Material carnivoreMaterial;
     public Material scavengerMaterial;
 
     public Mesh CubeMesh;
-    private Mesh cellMesh;
 
     private BrainData herbivoreMainBrain;
     private BrainData herbivoreMoveEatBrain;
@@ -32,14 +28,14 @@ public class SimulationManager : MonoBehaviour
     private float Bias = 0.5f;
     private float P = 0.5f;
 
+    private GridManager NewGrid;
+
     private void OnEnable()
     {
-        GridManager NewGrid = new GridManager(20, 20, 2);
-
-        cellMesh = CreateCellMesh();
+        NewGrid = new GridManager(20, 20, 2);
 
         herbivoreMainBrain = new BrainData(11, new int[] { 7, 5, 3 }, 3, Bias, P);
-        herbivoreMoveEatBrain = new BrainData(4, new int[] { 5, 4}, 4, Bias, P);
+        herbivoreMoveEatBrain = new BrainData(4, new int[] { 5, 4 }, 4, Bias, P);
         herbivoreMoveEscapeBrain = new BrainData(5, new int[] { 3 }, 1, Bias, P);
         herbivoreEatBrain = new BrainData(8, new int[] { 5, 3 }, 4, Bias, P);
 
@@ -56,11 +52,12 @@ public class SimulationManager : MonoBehaviour
             { carnivoreMainBrain, carnivoreMoveEatBrain, carnivoreEatBrain };
         List<BrainData> scavengerData = new List<BrainData> { scavengerMainBrain, scavengerFlockingBrain };
 
-        simulation = new Simulation(NewGrid, herbivoreData, carnivoreData, scavengerData, 10, 10, 10, 5, 10, 10, 10);
+        simulation = new Simulation(NewGrid, herbivoreData, carnivoreData, scavengerData, 10, 10, 10, 5, 10, 10, 35);
     }
 
     private void Update()
     {
+        simulation.UpdateSimulation(Time.deltaTime);
     }
 
     private void DrawEntities()
@@ -82,48 +79,31 @@ public class SimulationManager : MonoBehaviour
 
         foreach (AgentScavenger agent in simulation.Scavenger)
         {
-            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 3), scavengerMaterial, agent.radius * 2);
+            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 3), scavengerMaterial, agent.radius);
         }
     }
 
-    Mesh CreateCellMesh()
+    private void OnDrawGizmos()
     {
-        // Crear un Mesh simple de tipo "Quad" (rectángulo)
-        Mesh mesh = new Mesh();
-        Vector3[] vertices = new Vector3[4];
-        int[] triangles = new int[6];
+        if (!Application.isPlaying)
+            return;
 
-        // Definir las posiciones de los vértices de un cuadrado
-        vertices[0] = new Vector3(0, 0, 0); // Vértice inferior izquierdo
-        vertices[1] = new Vector3(1, 0, 0); // Vértice inferior derecho
-        vertices[2] = new Vector3(1, 1, 0); // Vértice superior derecho
-        vertices[3] = new Vector3(0, 1, 0); // Vértice superior izquierdo
+        Gizmos.color = Color.black;
 
-        // Definir los triángulos (para los dos triángulos que forman el cuadrado)
-        triangles[0] = 0;
-        triangles[1] = 1;
-        triangles[2] = 2;
-        triangles[3] = 0;
-        triangles[4] = 2;
-        triangles[5] = 3;
-
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-
-        mesh.RecalculateNormals();
-        return mesh;
-    }
-
-    private void DrawGrid()
-    {
-        for (int x = 0; x < simulation.gridManager.size.X; x++)
+        for (float x = 0;
+             x <= simulation.gridManager.size.X * simulation.gridManager.cellSize;
+             x += simulation.gridManager.cellSize)
         {
-            for (int z = 0; z < simulation.gridManager.size.Y; z++)
-            {
-                Vector3 position = new Vector3(x * simulation.gridManager.cellSize, 0,
-                    z * simulation.gridManager.cellSize);
-                Graphics.DrawMesh(cellMesh, position, Quaternion.identity, gridMaterial, 0);
-            }
+            Gizmos.DrawLine(new Vector3(x, 0, 0),
+                new Vector3(x, simulation.gridManager.size.Y * simulation.gridManager.cellSize, 0));
+        }
+
+        for (float y = 0;
+             y <= simulation.gridManager.size.Y * simulation.gridManager.cellSize;
+             y += simulation.gridManager.cellSize)
+        {
+            Gizmos.DrawLine(new Vector3(0, y, 0),
+                new Vector3(simulation.gridManager.size.X * simulation.gridManager.cellSize, y, 0));
         }
     }
 
@@ -137,7 +117,6 @@ public class SimulationManager : MonoBehaviour
 
     private void OnRenderObject()
     {
-        DrawGrid();
         DrawEntities();
     }
 }

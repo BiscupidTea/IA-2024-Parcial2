@@ -163,24 +163,6 @@ namespace IA_Library.Brain
 
             return id;
         }
-        
-        public float[] GetGenome()
-        {
-            float[] weights = new float[totalWeightsCount];
-            int id = 0;
-
-            for (int i = 0; i < layers.Count; i++)
-            {
-                float[] ws = layers[i].GetWeights();
-
-                for (int j = 0; j < ws.Length; j++)
-                {
-                    weights[id++] = ws[j];
-                }
-            }
-
-            return weights;
-        }
 
         public Layer GetInputLayer()
         {
