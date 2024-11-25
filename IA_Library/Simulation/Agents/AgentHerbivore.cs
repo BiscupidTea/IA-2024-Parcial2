@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using IA_Library;
 using IA_Library.Brain;
+using Vector2 = System.Numerics.Vector2;
 
 namespace IA_Library_FSM
 {
@@ -22,11 +22,15 @@ namespace IA_Library_FSM
             gridManager, mainBrain)
         {
             maxFood = 5;
-            Action<Vector2> onMove;
-
+            
             this.moveToFoodBrain = moveToFoodBrain;
             this.moveToEscapeBrain = moveToEscapeBrain;
             this.eatBrain = eatBrain;
+            
+            Action<Vector2> onMove;
+            Action<bool> onEatenFood;
+            Action<int> onEat;
+
             
             fsmController.AddBehaviour<MoveToEatHerbivoreState>(Behaviours.MoveToFood,
                 onEnterParameters: () => { return new object[] { moveToFoodBrain }; },
@@ -44,8 +48,8 @@ namespace IA_Library_FSM
                 {
                     return new object[]
                     {
-                        eatBrain.outputs, position, GetNearestFoodPosition(), GetNearestFood(), hasEaten, currentFood,
-                        maxFood
+                        eatBrain.outputs, position, GetNearestFood().position, hasEaten, currentFood, maxFood,
+                        onEatenFood = b => { hasEaten = b; }, onEat = a => currentFood = a, GetNearestFood(),
                     };
                 });
 
@@ -59,7 +63,8 @@ namespace IA_Library_FSM
                     };
                 });
 
-            fsmController.AddBehaviour<DeathHerbivoreState>(Behaviours.Death);
+            fsmController.AddBehaviour<DeathHerbivoreState>(Behaviours.Death,
+                onTickParameters: () => { return new object[] { lives }; });
             fsmController.AddBehaviour<CorpseHerbivoreState>(Behaviours.Corpse);
 
             fsmController.SetTransition(Behaviours.MoveToFood, Flags.OnTransitionEat, Behaviours.Eat);
@@ -70,6 +75,8 @@ namespace IA_Library_FSM
 
             fsmController.SetTransition(Behaviours.Eat, Flags.OnTransitionMoveToEat, Behaviours.MoveToFood);
             fsmController.SetTransition(Behaviours.MoveEscape, Flags.OnTransitionMoveToEat, Behaviours.MoveToFood);
+
+            fsmController.ForcedState(Behaviours.MoveToFood);
         }
 
         public override void Update(float deltaTime)
@@ -77,18 +84,18 @@ namespace IA_Library_FSM
             ChooseNextState(mainBrain.outputs);
             fsmController.Tick();
         }
-        
+
         public override void Reset()
         {
             mainBrain.FitnessMultiplier = 1;
             mainBrain.FitnessReward = 0;
-            
+
             moveToFoodBrain.FitnessMultiplier = 1;
             moveToFoodBrain.FitnessReward = 0;
-            
+
             moveToEscapeBrain.FitnessMultiplier = 1;
             moveToEscapeBrain.FitnessReward = 0;
-            
+
             eatBrain.FitnessMultiplier = 1;
             eatBrain.FitnessReward = 0;
 
@@ -96,7 +103,7 @@ namespace IA_Library_FSM
             currentFood = 0;
             hasEaten = false;
             position = gridManager.GetRandomValuePositionGrid();
-            
+
             fsmController.ForcedState(Behaviours.MoveToFood);
         }
 
@@ -185,6 +192,22 @@ namespace IA_Library_FSM
 
             return false;
         }
+
+        public override void SetEatState(bool state)
+        {
+            hasEaten = state;
+        }
+
+        public override void AddFitnessToMain()
+        {
+            mainBrain.FitnessMultiplier = 1.0f;
+            mainBrain.FitnessReward = 0f;
+            mainBrain.FitnessReward += eatBrain.FitnessReward + moveToFoodBrain.FitnessReward + moveToEscapeBrain.FitnessReward;
+            mainBrain.FitnessMultiplier += eatBrain.FitnessMultiplier + moveToFoodBrain.FitnessMultiplier +
+                                           moveToEscapeBrain.FitnessMultiplier;
+
+            mainBrain.ApplyFitness();
+        }
     }
 
     public class MoveToEatHerbivoreState : MoveState
@@ -206,7 +229,7 @@ namespace IA_Library_FSM
             float[] outputs = parameters[0] as float[];
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
-            var onMove = parameters[3] as Action<Vector2[]>;
+            var onMove = parameters[3] as Action<Vector2>;
 
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
@@ -233,14 +256,17 @@ namespace IA_Library_FSM
                 }
 
                 Vector2[] direction = new Vector2[movementPerTurn];
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < movementPerTurn; i++)
                 {
                     direction[i] = GetDir(outputs[i + 1]);
                 }
 
                 if (movementPerTurn > 0)
                 {
-                    onMove.Invoke(direction);
+                    foreach (Vector2 direc in direction)
+                    {
+                        onMove.Invoke(direc);
+                    }
 
                     List<Vector2> newPositions = new List<Vector2>();
                     newPositions.Add(nearFoodPos);
@@ -291,7 +317,7 @@ namespace IA_Library_FSM
             float[] outputs = parameters[0] as float[];
             position = (Vector2)parameters[1];
             nearEnemyPositions = parameters[2] as List<Vector2>;
-            var onMove = parameters[3] as Action<Vector2[]>;
+            var onMove = parameters[3] as Action<Vector2>;
 
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
@@ -317,15 +343,19 @@ namespace IA_Library_FSM
                     movementPerTurn = 0;
                 }
 
+
                 Vector2[] direction = new Vector2[movementPerTurn];
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < movementPerTurn; i++)
                 {
                     direction[i] = GetDir(outputs[i + 1]);
                 }
 
                 if (movementPerTurn > 0)
                 {
-                    onMove.Invoke(direction);
+                    foreach (Vector2 direc in direction)
+                    {
+                        onMove.Invoke(direc);
+                    }
 
                     float distanceFromEnemies = GetDistanceFrom(nearEnemyPositions);
                     if (distanceFromEnemies <= previousDistance)
@@ -361,15 +391,16 @@ namespace IA_Library_FSM
         public override BehavioursActions GetTickBehaviour(params object[] parameters)
         {
             BehavioursActions behaviour = new BehavioursActions();
-
-
+            
             float[] outputs = parameters[0] as float[];
             position = (Vector2)parameters[1];
             Vector2 nearFoodPos = (Vector2)parameters[2];
-            AgentPlant plant = parameters[3] as AgentPlant;
-            bool maxEaten = (bool)parameters[4];
-            int currentFood = (int)parameters[5];
-            int maxEating = (int)parameters[6];
+            bool hasEatenEnoughFood = (bool)parameters[3];
+            int counterEating = (int)parameters[4];
+            int maxEating = (int)parameters[5];
+            var onHasEatenEnoughFood = parameters[6] as Action<bool>;
+            var onEaten = parameters[7] as Action<int>;
+            AgentPlant plant = parameters[8] as AgentPlant;
 
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
@@ -380,33 +411,32 @@ namespace IA_Library_FSM
 
                 if (outputs[0] >= 0f)
                 {
-                    if (position == nearFoodPos && !maxEaten)
+                    if (position == nearFoodPos && !hasEatenEnoughFood)
                     {
                         if (plant.CanBeEaten())
                         {
                             plant.Eat();
-                            currentFood++;
-
+                            onEaten(++counterEating);
                             brain.FitnessReward += 20;
-
-                            if (currentFood == maxEating)
+                            if (counterEating == maxEating)
                             {
                                 brain.FitnessReward += 30;
+                                onHasEatenEnoughFood.Invoke(true);
                             }
                         }
                     }
-                    else if (maxEaten || position != nearFoodPos)
+                    else if (hasEatenEnoughFood || position != nearFoodPos)
                     {
                         brain.FitnessMultiplier -= 0.05f;
                     }
                 }
                 else
                 {
-                    if (position == nearFoodPos && !maxEaten)
+                    if (position == nearFoodPos && !hasEatenEnoughFood)
                     {
                         brain.FitnessMultiplier -= 0.05f;
                     }
-                    else if (maxEaten)
+                    else if (hasEatenEnoughFood)
                     {
                         brain.FitnessMultiplier += 0.10f;
                     }
@@ -458,17 +488,17 @@ namespace IA_Library_FSM
     {
         public override BehavioursActions GetOnEnterBehaviour(params object[] parameters)
         {
-            throw new NotImplementedException();
+            return default;
         }
 
         public override BehavioursActions GetTickBehaviour(params object[] parameters)
         {
-            throw new NotImplementedException();
+            return default;
         }
 
         public override BehavioursActions GetOnExitBehaviour(params object[] parameters)
         {
-            throw new NotImplementedException();
+            return default;
         }
     }
 }

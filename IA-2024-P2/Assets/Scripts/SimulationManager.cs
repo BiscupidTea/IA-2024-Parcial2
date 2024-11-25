@@ -7,13 +7,22 @@ using UnityEngine;
 public class SimulationManager : MonoBehaviour
 {
     private Simulation simulation;
-
+    
+    public string fileToLoad;
+    public string filePath = "/Saves/Genomes";
+    public string fileExtension = ".citosina";
+    
     [SerializeField] private Vector2Int gridSize;
     [SerializeField] private float cellSize;
 
     [SerializeField] private int totalHerbivores;
     [SerializeField] private int totalCarnivores;
     [SerializeField] private int totalScavengers;
+
+    [SerializeField] private int mutationChance;
+    [SerializeField] private int mutationRate;
+
+    [SerializeField] private int totalElites;
 
     [SerializeField] private int generationTime;
 
@@ -39,7 +48,7 @@ public class SimulationManager : MonoBehaviour
     private float P = 0.5f;
 
     private GridManager NewGrid;
-
+    
     private void OnEnable()
     {
         NewGrid = new GridManager(gridSize.x, gridSize.y, cellSize);
@@ -53,7 +62,7 @@ public class SimulationManager : MonoBehaviour
         carnivoreMoveEatBrain = new BrainData(4, new int[] { 3, 2 }, 2, Bias, P);
         carnivoreEatBrain = new BrainData(5, new int[] { 2, 2 }, 1, Bias, P);
 
-        scavengerMainBrain = new BrainData(5, new int[] { 3, 5 }, 3, Bias, P);
+        scavengerMainBrain = new BrainData(5, new int[] { 3, 5 }, 2, Bias, P);
         scavengerFlockingBrain = new BrainData(8, new int[] { 5, 5, 5 }, 4, Bias, P);
 
         List<BrainData> herbivoreData = new List<BrainData>
@@ -63,7 +72,12 @@ public class SimulationManager : MonoBehaviour
         List<BrainData> scavengerData = new List<BrainData> { scavengerMainBrain, scavengerFlockingBrain };
 
         simulation = new Simulation(NewGrid, herbivoreData, carnivoreData, scavengerData, totalHerbivores,
-            totalCarnivores, totalScavengers, 5, 10, 10, generationTime);
+            totalCarnivores, totalScavengers, totalElites, mutationChance, mutationRate, generationTime)
+        {
+            filepath = Application.dataPath + filePath,
+            fileExtension = fileExtension,
+            fileToLoad = fileToLoad
+        };
     }
 
     private void Update()
@@ -97,7 +111,7 @@ public class SimulationManager : MonoBehaviour
 
         foreach (AgentScavenger agent in simulation.Scavenger)
         {
-            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 0), scavengerMaterial, agent.radius);
+            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 0), scavengerMaterial, 1);
         }
     }
 
@@ -128,5 +142,14 @@ public class SimulationManager : MonoBehaviour
     private void OnRenderObject()
     {
         DrawEntities();
+    }
+    
+    [ContextMenu("Load Save")]
+    private void Load()
+    {
+        simulation.fileToLoad = Application.dataPath + filePath + fileToLoad + "." + fileExtension;
+        simulation.filepath = Application.dataPath + filePath;
+        simulation.fileExtension = fileExtension;
+        simulation.Load();
     }
 }

@@ -24,6 +24,7 @@ namespace IA_Library_FSM
         OnTransitionCorpse,
     }
 
+    [System.Serializable]
     public abstract class Agent
     {
         public Brain mainBrain;
@@ -34,8 +35,8 @@ namespace IA_Library_FSM
         public Vector2 position;
 
         public bool hasEaten = false;
-        protected int maxFood;
-        protected int currentFood = 0;
+        public int maxFood;
+        public int currentFood = 0;
 
         public Agent(Simulation simulation, GridManager gridManager, Brain mainBrain)
         {
@@ -43,8 +44,8 @@ namespace IA_Library_FSM
 
             this.simulation = simulation;
             this.gridManager = gridManager;
-            
-            position = gridManager.GetRandomValuePositionGrid();
+
+            position = Vector2.Zero;
 
             this.mainBrain = mainBrain;
         }
@@ -55,7 +56,8 @@ namespace IA_Library_FSM
         public abstract void MoveTo(Vector2 direction);
         public abstract Vector2 GetNearestFoodPosition();
         public abstract void SettingBrainUpdate(float deltaTime);
-
+        public abstract void SetEatState(bool state);
+        public abstract void AddFitnessToMain();
         public float[] GetMainBrainGenome()
         {
             return mainBrain.outputs;

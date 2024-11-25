@@ -338,12 +338,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 537ddef4ed6e9b341b955f91cf436ed0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridSize: {x: 70, y: 70}
+  fileToLoad: 
+  filePath: /Saves/
+  fileExtension: citosina
+  gridSize: {x: 50, y: 50}
   cellSize: 1
   totalHerbivores: 50
-  totalCarnivores: 5
-  totalScavengers: 5
-  generationTime: 400
+  totalCarnivores: 25
+  totalScavengers: 25
+  mutationChance: 20
+  mutationRate: 20
+  totalElites: 5
+  generationTime: 300
   plantMaterial: {fileID: 2100000, guid: 284121e6dec889e428fb360107666d6d, type: 2}
   herbivoreMaterial: {fileID: 2100000, guid: 1ad08f9eabd70084f933b6a62adacb44, type: 2}
   deadHerbivoreMaterial: {fileID: 2100000, guid: eae8045bbe2a75044804bf73de8bc925, type: 2}
