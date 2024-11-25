@@ -7,9 +7,19 @@ using UnityEngine;
 public class SimulationManager : MonoBehaviour
 {
     private Simulation simulation;
-    
+
+    [SerializeField] private Vector2Int gridSize;
+    [SerializeField] private float cellSize;
+
+    [SerializeField] private int totalHerbivores;
+    [SerializeField] private int totalCarnivores;
+    [SerializeField] private int totalScavengers;
+
+    [SerializeField] private int generationTime;
+
     public Material plantMaterial;
     public Material herbivoreMaterial;
+    public Material deadHerbivoreMaterial;
     public Material carnivoreMaterial;
     public Material scavengerMaterial;
 
@@ -32,12 +42,12 @@ public class SimulationManager : MonoBehaviour
 
     private void OnEnable()
     {
-        NewGrid = new GridManager(20, 20, 2);
+        NewGrid = new GridManager(gridSize.x, gridSize.y, cellSize);
 
-        herbivoreMainBrain = new BrainData(11, new int[] { 7, 5, 3 }, 3, Bias, P);
-        herbivoreMoveEatBrain = new BrainData(4, new int[] { 5, 4 }, 4, Bias, P);
-        herbivoreMoveEscapeBrain = new BrainData(5, new int[] { 3 }, 1, Bias, P);
-        herbivoreEatBrain = new BrainData(8, new int[] { 5, 3 }, 4, Bias, P);
+        herbivoreMainBrain = new BrainData(11, new int[] { 9, 7, 5, 3 }, 3, Bias, P);
+        herbivoreMoveEatBrain = new BrainData(4, new int[] { 5, 4, 4 }, 4, Bias, P);
+        herbivoreMoveEscapeBrain = new BrainData(8, new int[] { 5, 4, 4 }, 4, Bias, P);
+        herbivoreEatBrain = new BrainData(5, new int[] { 3, 3, 2 }, 1, Bias, P);
 
         carnivoreMainBrain = new BrainData(5, new int[] { 3, 2 }, 2, Bias, P);
         carnivoreMoveEatBrain = new BrainData(4, new int[] { 3, 2 }, 2, Bias, P);
@@ -52,7 +62,8 @@ public class SimulationManager : MonoBehaviour
             { carnivoreMainBrain, carnivoreMoveEatBrain, carnivoreEatBrain };
         List<BrainData> scavengerData = new List<BrainData> { scavengerMainBrain, scavengerFlockingBrain };
 
-        simulation = new Simulation(NewGrid, herbivoreData, carnivoreData, scavengerData, 10, 10, 10, 5, 10, 10, 35);
+        simulation = new Simulation(NewGrid, herbivoreData, carnivoreData, scavengerData, totalHerbivores,
+            totalCarnivores, totalScavengers, 5, 10, 10, generationTime);
     }
 
     private void Update()
@@ -64,22 +75,29 @@ public class SimulationManager : MonoBehaviour
     {
         foreach (AgentPlant agent in simulation.Plants)
         {
-            DrawSquare(new Vector3(agent.position.Y, agent.position.Y, 0), plantMaterial, 1);
+            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 0), plantMaterial, 1);
         }
 
         foreach (AgentHerbivore agent in simulation.Herbivore)
         {
-            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 1), herbivoreMaterial, 1);
+            if (agent.lives <= 0)
+            {
+                DrawSquare(new Vector3(agent.position.X, agent.position.Y, 0), deadHerbivoreMaterial, 1);
+            }
+            else
+            {
+                DrawSquare(new Vector3(agent.position.X, agent.position.Y, 0), herbivoreMaterial, 1);
+            }
         }
 
         foreach (AgentCarnivore agent in simulation.Carnivore)
         {
-            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 2), carnivoreMaterial, 1);
+            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 0), carnivoreMaterial, 1);
         }
 
         foreach (AgentScavenger agent in simulation.Scavenger)
         {
-            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 3), scavengerMaterial, agent.radius);
+            DrawSquare(new Vector3(agent.position.X, agent.position.Y, 0), scavengerMaterial, agent.radius);
         }
     }
 
@@ -90,20 +108,12 @@ public class SimulationManager : MonoBehaviour
 
         Gizmos.color = Color.black;
 
-        for (float x = 0;
-             x <= simulation.gridManager.size.X * simulation.gridManager.cellSize;
-             x += simulation.gridManager.cellSize)
+        for (int x = 0; x < simulation.gridManager.size.X; x++)
         {
-            Gizmos.DrawLine(new Vector3(x, 0, 0),
-                new Vector3(x, simulation.gridManager.size.Y * simulation.gridManager.cellSize, 0));
-        }
-
-        for (float y = 0;
-             y <= simulation.gridManager.size.Y * simulation.gridManager.cellSize;
-             y += simulation.gridManager.cellSize)
-        {
-            Gizmos.DrawLine(new Vector3(0, y, 0),
-                new Vector3(simulation.gridManager.size.X * simulation.gridManager.cellSize, y, 0));
+            for (int y = 0; y < simulation.gridManager.size.Y; y++)
+            {
+                Gizmos.DrawSphere(new Vector3(x, y, 0), 0.2f);
+            }
         }
     }
 

@@ -184,7 +184,7 @@ namespace IA_Library.Brain
         {
             Index layerIndex = ^1;
             int id = layers[layerIndex].neurons.Length;
-            float[,] weights = new float[layers[layerIndex].neurons.Length, layers[0].neurons[0].WeightsCount];
+            float[,] weights = new float[layers[layerIndex].neurons.Length, layers[layerIndex].neurons[0].WeightsCount];
             for (var index = 0; index < layers[layerIndex].neurons.Length; index++)
             {
                 for (var j = 0; j < layers[layerIndex].neurons[index].WeightsCount; j++)
@@ -249,7 +249,7 @@ namespace IA_Library.Brain
             }
 
             newbrain.AddNeuronLayer(outputsCount, bias, sigmoid);
-
+            
             return newbrain;
         }
     }

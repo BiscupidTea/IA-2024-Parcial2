@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using IA_Library_ECS;
 using IA_Library_FSM;
 using IA_Library.Brain;
+using UnityEngine;
+using Vector2 = System.Numerics.Vector2;
 
 namespace IA_Library
 {
@@ -144,22 +145,22 @@ namespace IA_Library
             for (int i = 0; i < totalHerbivores; i++)
             {
                 CreateEntity(Herbivore[i].mainBrain);
-                //CreateEntity(Herbivore[i].moveToFoodBrain);
-                //CreateEntity(Herbivore[i].moveToEscapeBrain);
-                //CreateEntity(Herbivore[i].eatBrain);
+                CreateEntity(Herbivore[i].moveToFoodBrain);
+                CreateEntity(Herbivore[i].moveToEscapeBrain);
+                CreateEntity(Herbivore[i].eatBrain);
             }
 
             for (int i = 0; i < totalCarnivores; i++)
             {
-                // CreateEntity(Carnivore[i].mainBrain);
-                //(Carnivore[i].moveToFoodBrain);
-                //CreateEntity(Carnivore[i].eatBrain);
+                CreateEntity(Carnivore[i].mainBrain);
+                CreateEntity(Carnivore[i].moveToFoodBrain);
+                CreateEntity(Carnivore[i].eatBrain);
             }
 
             for (int i = 0; i < totalScavengers; i++)
             {
-                //CreateEntity(Scavenger[i].mainBrain);
-                //CreateEntity(Scavenger[i].flockingBrain);
+                CreateEntity(Scavenger[i].mainBrain);
+                CreateEntity(Scavenger[i].flockingBrain);
             }
         }
 
@@ -230,6 +231,8 @@ namespace IA_Library
 
             bool isGenerationDead = (count <= 1);
 
+            Debug.Log("Herbivore Alive: " + count);
+
             EpochLocal(herbivoreMainBrain, isGenerationDead, HeMainBrain);
             EpochLocal(herbivoreMoveFoodBrain, isGenerationDead, HeMoveFoodBrain);
             EpochLocal(herbivoreMoveEscapeBrain, isGenerationDead, HeMoveEscapeBrain);
@@ -255,6 +258,8 @@ namespace IA_Library
 
             bool isGenerationDead = count <= 1;
 
+            Debug.Log("Carnivore Alive: " + count);
+
             EpochLocal(carnivoreMainBrain, isGenerationDead, CaMainBrain);
             EpochLocal(carnivoreMoveBrain, isGenerationDead, CaMoveBrain);
             EpochLocal(carnivoreEatBrain, isGenerationDead, CaEatBrain);
@@ -273,13 +278,15 @@ namespace IA_Library
 
             bool isGenerationDead = count <= 1;
 
+            Debug.Log("Scavenger Alive: " + count);
+
             EpochLocal(ScavengerMainBrain, isGenerationDead, ScaMainBrain);
             EpochLocal(ScavengerFlockingBrain, isGenerationDead, ScaFlockingBrain);
         }
 
         private void EpochLocal(List<Brain.Brain> brains, bool force, GeneticData data)
         {
-            Genome[] newGenomes = GeneticAlgorithm.Epoch(GetGenomes(brains), geneticInfo[brains], force);
+            Genome[] newGenomes = GeneticAlgorithm.Epoch(GetGenomes(brains), data, force);
             data.lastGenome = newGenomes;
 
             for (int i = 0; i < brains.Count; i++)
@@ -470,7 +477,7 @@ namespace IA_Library
             return nearestPoint.position;
         }
 
-        public Vector2 GetNearestDeadHerbivorePosition(Vector2 position)
+        public Vector2? GetNearestDeadHerbivorePosition(Vector2 position)
         {
             AgentHerbivore nearestPoint = null;
             float minDistanceSquared = float.MaxValue;
@@ -490,7 +497,7 @@ namespace IA_Library
                 }
             }
 
-            return nearestPoint.position;
+            return nearestPoint?.position;
         }
 
         public List<AgentScavenger> GetNearestScavengers(Vector2 position, int count)

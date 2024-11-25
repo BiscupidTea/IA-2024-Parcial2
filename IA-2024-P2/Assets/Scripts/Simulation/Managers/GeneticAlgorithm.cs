@@ -112,17 +112,18 @@ namespace IA_Library
             population.AddRange(oldGenomes);
             population.Sort(HandleComparison);
 
-            GeneticData backUpData = new(data);
+            GeneticData backUpData = new GeneticData(data);
             foreach (Genome g in population)
             {
                 currentTotalFitness += g.fitness;
             }
 
+
             if (forceEvolve)
             {
                 data.stuckGenerationCounter = 0;
-                data.mutationChance *= 1.2f;
-                data.mutationRate *= 1.2f;
+                data.mutationChance *= 2.8f;
+                data.mutationRate *= 2.8f;
                 evolutionType = (EvolutionType)random.Next(1, Enum.GetValues(typeof(EvolutionType)).Length);
             }
             else if (currentTotalFitness < data.totalFitness)
@@ -135,11 +136,16 @@ namespace IA_Library
                 }
             }
 
+            data.totalFitness = currentTotalFitness;
+            CalculateNeuronsToAdd(data.brainStructure);
+
+
             SelectElite(evolutionType, data.totalElites);
             while (newPopulation.Count < population.Count)
             {
                 Crossover(data, evolutionType);
             }
+
 
             switch (evolutionType)
             {
@@ -182,8 +188,9 @@ namespace IA_Library
             }
         }
 
-        public static void CalculateNeuronsToAdd(Brain.Brain brain)
+        private static void CalculateNeuronsToAdd(Brain.Brain brain)
         {
+            Random random = new Random();
             newNeuronToAddQuantity = random.Next(1, 3);
             randomLayer = random.Next(1, brain.layers.Count - 1);
             neuronLayers = brain.layers;
@@ -220,12 +227,12 @@ namespace IA_Library
                 child1.genome[i] = mom.genome[i];
 
                 if (ShouldMutate(data.mutationChance))
-                    child1.genome[i] += GetRandomMutation(data.mutationRate);
+                    child1.genome[i] += RandomRangeFloat(-data.mutationRate, data.mutationRate);
 
                 child2.genome[i] = dad.genome[i];
 
                 if (ShouldMutate(data.mutationChance))
-                    child2.genome[i] += GetRandomMutation(data.mutationRate);
+                    child2.genome[i] += RandomRangeFloat(-data.mutationRate, data.mutationRate);
             }
 
 
@@ -234,12 +241,12 @@ namespace IA_Library
                 child2.genome[i] = mom.genome[i];
 
                 if (ShouldMutate(data.mutationChance))
-                    child2.genome[i] += GetRandomMutation(data.mutationRate);
+                    child2.genome[i] += RandomRangeFloat(-data.mutationRate, data.mutationRate);
 
                 child1.genome[i] = dad.genome[i];
 
                 if (ShouldMutate(data.mutationChance))
-                    child1.genome[i] += GetRandomMutation(data.mutationRate);
+                    child1.genome[i] += RandomRangeFloat(-data.mutationRate, data.mutationRate);
             }
 
             switch (evolutionType)
@@ -256,11 +263,6 @@ namespace IA_Library
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(evolutionType), evolutionType, null);
-            }
-
-            float GetRandomMutation(float mutationRate)
-            {
-                return (float)(random.NextDouble() * 2 * mutationRate - mutationRate);
             }
         }
 
@@ -282,7 +284,7 @@ namespace IA_Library
 
         static bool ShouldMutate(float mutationChance)
         {
-            return random.NextDouble() < mutationChance;
+            return RandomRangeFloat(0.0f, 1.0f) < mutationChance;
         }
 
         static int HandleComparison(Genome x, Genome y)
@@ -371,7 +373,6 @@ namespace IA_Library
             int count = 0;
             int originalWeightsCount = 0;
 
-
             int previousLayerInputs = neuronLayers[randomLayer].OutputsCount;
             int nextLayerInputs = neuronLayers[randomLayer + 1].OutputsCount;
 
@@ -439,5 +440,11 @@ namespace IA_Library
                 count++;
             }
         }
+
+        public static float RandomRangeFloat(float min, float max)
+        {
+            return (float)(random.NextDouble() * (max - min) + min);
+        }
     }
+
 }

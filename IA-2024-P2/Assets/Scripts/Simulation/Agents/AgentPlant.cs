@@ -32,7 +32,7 @@ namespace IA_Library_FSM
 
         public override void Reset()
         {
-            this.position = position;
+            position = gridManager.GetRandomValuePositionGrid();;
         }
 
         public override void Update(float deltaTime)
@@ -56,6 +56,11 @@ namespace IA_Library_FSM
         }
 
         public override void SettingBrainUpdate(float deltaTime)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void SetEatState(bool state)
         {
             throw new System.NotImplementedException();
         }

@@ -43,8 +43,8 @@ namespace IA_Library_FSM
 
             this.simulation = simulation;
             this.gridManager = gridManager;
-            
-            position = gridManager.GetRandomValuePositionGrid();
+
+            position = Vector2.Zero;
 
             this.mainBrain = mainBrain;
         }
@@ -55,7 +55,7 @@ namespace IA_Library_FSM
         public abstract void MoveTo(Vector2 direction);
         public abstract Vector2 GetNearestFoodPosition();
         public abstract void SettingBrainUpdate(float deltaTime);
-
+        public abstract void SetEatState(bool state);
         public float[] GetMainBrainGenome()
         {
             return mainBrain.outputs;

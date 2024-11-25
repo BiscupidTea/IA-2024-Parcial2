@@ -134,15 +134,7 @@ namespace IA_Library_ECS
             int exclusive = outputLayerComponent[entity].layer.weights.GetLength(1);
             for (int i = 0; i < exclusive; i++)
             {
-                try
-                {
-                    a += outputLayerComponent[entity].layer.weights[neuron, i] * inputs[i];
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+                a += outputLayerComponent[entity].layer.weights[neuron, i] * inputs[i];
             }
 
             a += biasComponent[entity].X;
