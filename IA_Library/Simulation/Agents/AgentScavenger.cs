@@ -10,11 +10,12 @@ namespace IA_Library_FSM
     {
         public Brain flockingBrain;
         float minEatRadius;
-        protected Vector2 dir = new Vector2(1, 1);
-        public bool hasEaten = false;
-        public int counterEating = 0;
+        public  Vector2 dir = new Vector2(1, 1);
+        protected Vector2 nearFoodPos;
+        protected AgentHerbivore nearHerbivore;
+        protected List<AgentScavenger> nearBudis = new List<AgentScavenger>();
         public float rotation = 0;
-        protected float speed = 5;
+        public  float speed = 5;
         protected float radius = 2;
         private float deltaTime = 0;
 
@@ -33,9 +34,9 @@ namespace IA_Library_FSM
                 {
                     return new object[]
                     {
-                        mainBrain.outputs, position, GetNearestFoodPosition(), minEatRadius, hasEaten, GetNearestFoodAgent(),
+                        mainBrain.outputs, position, nearFoodPos, minEatRadius, hasEaten, nearHerbivore,
                         setDir = MoveTo, currentFood, setEatingCounter = b => currentFood = b, dir, rotation, speed,
-                        radius, GetNearestAgents(), deltaTime
+                        radius, nearBudis, deltaTime
                     };
                 });
 
@@ -65,7 +66,7 @@ namespace IA_Library_FSM
         {
             dir = direction;
         }
-        
+
         public void Move(float deltaTime)
         {
             position += dir * speed * deltaTime;
@@ -75,14 +76,18 @@ namespace IA_Library_FSM
         public override void SettingBrainUpdate(float deltaTime)
         {
             this.deltaTime = deltaTime;
-            var nearFoodPos = GetNearestFoodPosition();
+            nearFoodPos = GetNearestFoodPosition();
+
             mainBrain.inputs = new[] { position.X, position.Y, minEatRadius, nearFoodPos.X, nearFoodPos.Y };
-       
-            var ner = GetNearestAgents();
+
+            nearBudis = GetNearestAgents();
+            nearHerbivore = GetNearestFoodAgent();
             flockingBrain.inputs = new[]
             {
-                position.X, position.Y, ner[0].position.X, ner[0].position.Y, ner[1].position.X, ner[1].position.Y,
-                ner[0].rotation, ner[1].rotation
+                position.X, position.Y,
+                nearBudis[0].position.X, nearBudis[0].position.Y,
+                nearBudis[1].position.X, nearBudis[1].position.Y,
+                nearBudis[0].rotation, nearBudis[1].rotation
             };
         }
 
@@ -101,7 +106,7 @@ namespace IA_Library_FSM
         {
             return simulation.GetNearestScavengers(position, 3);
         }
-        
+
         public override void SetEatState(bool state)
         {
             hasEaten = state;
@@ -110,7 +115,7 @@ namespace IA_Library_FSM
         public override void AddFitnessToMain()
         {
             flockingBrain.ApplyFitness();
-            
+
             mainBrain.FitnessMultiplier = 1.0f;
             mainBrain.FitnessReward = 0f;
             mainBrain.FitnessReward += flockingBrain.FitnessReward + (hasEaten ? flockingBrain.FitnessReward : 0);
@@ -128,6 +133,9 @@ namespace IA_Library_FSM
         private float speed;
         private float radius;
         private Brain flockingBrain;
+        Vector2 Aligment ;
+        Vector2 Cohesion  ;
+        Vector2 Separation;
 
         public override BehavioursActions GetOnEnterBehaviour(params object[] parameters)
         {
@@ -159,7 +167,7 @@ namespace IA_Library_FSM
             radius = (float)(parameters[12]);
             List<AgentScavenger> nearScavengers = parameters[13] as List<AgentScavenger>;
             float deltaTime = (float)parameters[14];
-            
+
             behaviour.AddMultitreadableBehaviours(0, () =>
             {
                 List<Vector2> newPositions = new List<Vector2> { nearFoodPos };
@@ -204,61 +212,54 @@ namespace IA_Library_FSM
 
             behaviour.AddMultitreadableBehaviours(1, () =>
             {
-                Vector2 flokingInfluence =
-                    dir * (flockingBrain.outputs[0] + flockingBrain.outputs[1] + flockingBrain.outputs[2]);
+                Aligment = new Vector2(flockingBrain.outputs[0], flockingBrain.outputs[1]);
+                Aligment = Vector2.Normalize(Aligment);
+                Cohesion  = new Vector2(flockingBrain.outputs[2], flockingBrain.outputs[3]);
+                Cohesion = Vector2.Normalize(Cohesion);
+                Separation = new Vector2(flockingBrain.outputs[4], flockingBrain.outputs[5]);
+                Separation = Vector2.Normalize(Separation);
+                float aligmentWeight = 2;
+                float cohesionWeight = 2;
+                float separationWeight = 2;
+                Vector2 flokingInfluence = Aligment * aligmentWeight + Cohesion * cohesionWeight +
+                                           Separation * separationWeight + dir;
 
-                Vector2 finalDirection = dir + flokingInfluence;
 
-                finalDirection = Vector2.Normalize(finalDirection);
+                Vector2 finalDirection = Vector2.Normalize(flokingInfluence);
                 onMove.Invoke(finalDirection);
-                 position += finalDirection * speed * deltaTime;
-            });
+                position += finalDirection * speed * deltaTime;
 
-            //fitness
-            behaviour.AddMultitreadableBehaviours(2, () =>
-            {
-
-                //fitness Floking
-                foreach (AgentScavenger scavenger in nearScavengers)
+        
+                if (AlignmentCalc(nearScavengers) != Aligment)
                 {
-                    //Alignment
-                    float diff = MathF.Abs(rotation - scavenger.rotation);
+                    flockingBrain.FitnessMultiplier -= 0.05f;
+                }
+                else
+                {
+                    flockingBrain.FitnessReward += 1;
+                }
 
-                    if (diff > 180)
-                        diff = 360 - diff;
+                //Cohesion
+                if (CohesionCalc(nearScavengers) != Cohesion)
+                {
+                    flockingBrain.FitnessMultiplier -= 0.05f;
+                }
+                else
+                {
+                    flockingBrain.FitnessReward += 1;
+                }
 
-                    if (diff > 90)
-                    {
-                        flockingBrain.FitnessMultiplier -= 0.05f;
-                    }
-                    else
-                    {
-                        flockingBrain.FitnessReward += 1;
-                    }
-
-                    //Cohesion
-                    if (Vector2.Distance(position, scavenger.position) > radius * 6)
-                    {
-                        flockingBrain.FitnessMultiplier -= 0.05f;
-                    }
-                    else
-                    {
-                        flockingBrain.FitnessReward += 1;
-                    }
-
-                    //Separation
-                    if (Vector2.Distance(position, scavenger.position) < radius * 2)
-                    {
-                        flockingBrain.FitnessMultiplier -= 0.05f;
-                    }
-                    else
-                    {
-                        flockingBrain.FitnessReward += 1;
-                    }
-
-
+                //Separation
+                if (SeparationCalc(nearScavengers) != Separation)
+                {
+                    flockingBrain.FitnessMultiplier -= 0.05f;
+                }
+                else
+                {
+                    flockingBrain.FitnessReward += 1;
                 }
             });
+            
 
             return behaviour;
         }
@@ -268,6 +269,46 @@ namespace IA_Library_FSM
             brain.ApplyFitness();
             flockingBrain.ApplyFitness();
             return default;
+        }
+        
+        public Vector2 AlignmentCalc(List<AgentScavenger> scavengers)
+        {
+
+            Vector2 avg = Vector2.Zero;
+            foreach (AgentScavenger b in scavengers)
+            {
+                avg += b.dir * b.speed;
+            }
+            avg /= scavengers.Count;
+            avg = Vector2.Normalize(avg);
+            return avg;
+        }
+
+        public Vector2 CohesionCalc(List<AgentScavenger> scavengers)
+        {
+     
+            Vector2 avg = Vector2.Zero;
+            foreach (AgentScavenger b in scavengers)
+            {
+                avg += b.position;
+            }
+            avg /= scavengers.Count;
+            avg = (avg - position);
+            avg = Vector2.Normalize(avg);
+            return avg;
+        }
+
+        public Vector2 SeparationCalc(List<AgentScavenger> scavengers)
+        {
+            Vector2 avg = Vector2.Zero;
+            foreach (AgentScavenger b in scavengers)
+            {
+                avg += (b.position - position);
+            }
+            avg /= scavengers.Count;
+            avg *= -1;
+            avg = Vector2.Normalize(avg);
+            return avg;
         }
     }
 }
