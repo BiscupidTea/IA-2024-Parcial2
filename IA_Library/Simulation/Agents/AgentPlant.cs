@@ -33,6 +33,8 @@ namespace IA_Library_FSM
         public override void Reset()
         {
             position = gridManager.GetRandomValuePositionGrid();;
+            lives = 5;
+            isAlive = true;
         }
 
         public override void Update(float deltaTime)
@@ -65,7 +67,7 @@ namespace IA_Library_FSM
             throw new System.NotImplementedException();
         }
 
-        public override void AddFitnessToMain()
+        public override void ApplyFitness()
         {
             throw new System.NotImplementedException();
         }

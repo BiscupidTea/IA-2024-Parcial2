@@ -57,7 +57,7 @@ namespace IA_Library_FSM
         public abstract Vector2 GetNearestFoodPosition();
         public abstract void SettingBrainUpdate(float deltaTime);
         public abstract void SetEatState(bool state);
-        public abstract void AddFitnessToMain();
+        public abstract void ApplyFitness();
         public float[] GetMainBrainGenome()
         {
             return mainBrain.outputs;

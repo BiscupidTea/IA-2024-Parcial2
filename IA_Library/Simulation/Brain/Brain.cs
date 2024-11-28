@@ -10,7 +10,7 @@ namespace IA_Library.Brain
         public List<NeuronLayer> layers = new List<NeuronLayer>();
         int totalWeightsCount = 0;
         int inputsCount = 0;
-        private float fitness = 1;
+        public float fitness = 1;
         public float FitnessReward;
         public float FitnessMultiplier;
         public float[] outputs;
@@ -91,7 +91,7 @@ namespace IA_Library.Brain
 
         public void ApplyFitness()
         {
-            fitness *= FitnessReward * FitnessMultiplier > 0 ? FitnessMultiplier : 0;
+            fitness += FitnessReward * FitnessMultiplier > 0 ? FitnessMultiplier + 1 : 1;
         }
 
         public bool AddNeuronLayer(int neuronsCount, float bias, float p)
@@ -122,7 +122,7 @@ namespace IA_Library.Brain
 
         public void Set0Fitness()
         {
-            fitness *= 0;
+            fitness = 0;
         }
 
         public bool AddFirstNeuronLayer(int inputsCount, float bias, float p)

@@ -26,6 +26,16 @@ namespace IA_Library
         private int generationLifeTime;
         private int currentTurn = 0;
 
+        public float averageHerbivoreFitness = 0;
+        public float averageCarnivoreFitness = 0;
+        public float averageScavengerFitness = 0;
+
+        public int finalHerbivoreAlive = 0;
+        public int finalCarnivoreAlive = 0;
+        public int finalScavengerAlive = 0;
+
+        public event Action<int, float, int, float, int, float> OnFitnessCalculated;
+
         //Agents
         public List<AgentHerbivore> Herbivore = new List<AgentHerbivore>();
         public List<AgentCarnivore> Carnivore = new List<AgentCarnivore>();
@@ -141,16 +151,16 @@ namespace IA_Library
             CaMoveBrain = new GeneticData(totalElite, mutationChance, mutationRate, carnivoreMoveBrain[0]);
             ScaMainBrain = new GeneticData(totalElite, mutationChance, mutationRate, scavengerMainBrain[0]);
             ScaFlockingBrain = new GeneticData(totalElite, mutationChance, mutationRate, scavengerFlockingBrain[0]);
-            
+
             data.Add(HeMainBrain);
             data.Add(HeMoveEscapeBrain);
             data.Add(HeMoveFoodBrain);
             data.Add(HeEatBrain);
-            
+
             data.Add(CaMainBrain);
             data.Add(CaMoveBrain);
             data.Add(CaEatBrain);
-            
+
             data.Add(ScaMainBrain);
             data.Add(ScaFlockingBrain);
 
@@ -159,7 +169,7 @@ namespace IA_Library
                 manager.AddDataset(geneticData);
             }
 
-            for (int i = 0; i < totalHerbivores*2; i++)
+            for (int i = 0; i < totalHerbivores * 2; i++)
             {
                 Plants.Add(new AgentPlant(this, gridManager));
             }
@@ -227,10 +237,14 @@ namespace IA_Library
             {
                 geneticData.generationCount = currentGeneration;
             }
-            
+
             EpochHerbivore();
             EpochCarnivore();
             EpochScavenger();
+
+            OnFitnessCalculated?.Invoke(finalHerbivoreAlive, averageHerbivoreFitness,
+                finalCarnivoreAlive, averageCarnivoreFitness,
+                finalScavengerAlive, averageScavengerFitness);
 
             string file = $"{filepath}{currentGeneration}.{fileExtension}";
             manager.SaveAll(file);
@@ -241,14 +255,21 @@ namespace IA_Library
                 OutputLayerComponent outputComponent = ECSManager.GetComponent<OutputLayerComponent>(entity.Key);
                 outputComponent.layer = entity.Value.GetOutputLayer();
             }
+
+            averageHerbivoreFitness = 0;
+            averageCarnivoreFitness = 0;
+            averageScavengerFitness = 0;
         }
 
         private void EpochHerbivore()
         {
             int count = 0;
+            float totalFitness = 0f;
+
             foreach (AgentHerbivore current in Herbivore)
             {
-                current.AddFitnessToMain();
+                current.ApplyFitness();
+                
                 if (current.lives > 0 && current.hasEaten)
                 {
                     count++;
@@ -260,9 +281,14 @@ namespace IA_Library
                     current.moveToFoodBrain.Set0Fitness();
                     current.moveToEscapeBrain.Set0Fitness();
                 }
+                
+                totalFitness += current.mainBrain.fitness;
             }
 
+            finalHerbivoreAlive = count;
+
             bool isGenerationDead = (count <= 1);
+            averageHerbivoreFitness = count < 1 ? 0f : totalFitness / Herbivore.Count;
 
             EpochSingle(herbivoreMainBrain, isGenerationDead, HeMainBrain);
             EpochSingle(herbivoreMoveFoodBrain, isGenerationDead, HeMoveFoodBrain);
@@ -273,12 +299,15 @@ namespace IA_Library
         private void EpochCarnivore()
         {
             int count = 0;
+            float totalFitness = 0f;
+
             foreach (AgentCarnivore current in Carnivore)
             {
-                current.AddFitnessToMain();
+                current.ApplyFitness();
                 if (current.hasEaten)
                 {
                     count++;
+                    totalFitness += current.mainBrain.fitness;
                 }
                 else
                 {
@@ -288,8 +317,10 @@ namespace IA_Library
                 }
             }
 
-            bool isGenerationDead = count <= 1;
-            
+            finalCarnivoreAlive = count;
+            bool isGenerationDead = (count <= 1);
+            averageCarnivoreFitness = isGenerationDead ? 0f : totalFitness;
+
             EpochSingle(carnivoreMainBrain, isGenerationDead, CaMainBrain);
             EpochSingle(carnivoreMoveBrain, isGenerationDead, CaMoveBrain);
             EpochSingle(carnivoreEatBrain, isGenerationDead, CaEatBrain);
@@ -298,12 +329,15 @@ namespace IA_Library
         private void EpochScavenger()
         {
             int count = 0;
+            float totalFitness = 0f;
+
             foreach (AgentScavenger current in Scavenger)
             {
-                current.AddFitnessToMain();
+                current.ApplyFitness();
                 if (current.hasEaten)
                 {
                     count++;
+                    totalFitness += current.mainBrain.fitness;
                 }
                 else
                 {
@@ -312,8 +346,10 @@ namespace IA_Library
                 }
             }
 
+            finalScavengerAlive = count;
             bool isGenerationDead = count <= 1;
-            
+            averageScavengerFitness = isGenerationDead ? 0f : totalFitness;
+
             EpochSingle(scavengerMainBrain, isGenerationDead, ScaMainBrain);
             EpochSingle(scavengerFlockingBrain, isGenerationDead, ScaFlockingBrain);
         }
@@ -329,11 +365,11 @@ namespace IA_Library
                 brains[i].SetWeights(newGenomes[i].genome);
             }
         }
-        
+
         private void RestoreSave()
         {
             List<GeneticData> dataToPaste = manager.GetAllDatasets();
-            
+
             HeMainBrain = dataToPaste[0];
             HeEatBrain = dataToPaste[1];
             HeMoveEscapeBrain = dataToPaste[2];
@@ -343,6 +379,7 @@ namespace IA_Library
             CaMoveBrain = dataToPaste[6];
             ScaMainBrain = dataToPaste[7];
             ScaFlockingBrain = dataToPaste[8];
+
             manager.ClearDatasets();
             manager.AddDataset(HeMainBrain);
             manager.AddDataset(HeEatBrain);
@@ -353,8 +390,8 @@ namespace IA_Library
             manager.AddDataset(CaMoveBrain);
             manager.AddDataset(ScaMainBrain);
             manager.AddDataset(ScaFlockingBrain);
-            
-            
+
+
             currentGeneration = HeMainBrain.generationCount;
             RestoreBrainsData(herbivoreMainBrain, HeMainBrain);
             RestoreBrainsData(herbivoreEatBrain, HeEatBrain);
@@ -366,7 +403,6 @@ namespace IA_Library
             RestoreBrainsData(scavengerMainBrain, ScaMainBrain);
             RestoreBrainsData(scavengerFlockingBrain, ScaFlockingBrain);
             ResetPositions();
-            
         }
 
         private void RestoreBrainsData(List<Brain.Brain> brains, GeneticData info)
@@ -378,6 +414,7 @@ namespace IA_Library
                 {
                     counter -= info.lastGenome.Length;
                 }
+
                 brains[counter] = new Brain.Brain(info.brainStructure);
                 brains[counter].SetWeights(info.lastGenome[counter].genome);
             }
@@ -388,7 +425,8 @@ namespace IA_Library
             List<Genome> genomes = new List<Genome>();
             foreach (var brain in brains)
             {
-                Genome genome = new Genome(brain.GetTotalWeightsCount());
+                Genome genome = new Genome(brain.GetWeights());
+                genome.fitness = brain.fitness;
                 genomes.Add(genome);
             }
 
@@ -419,7 +457,7 @@ namespace IA_Library
             {
                 scav.Reset();
             }
-            
+
             foreach (var plant in Plants)
             {
                 plant.Reset();
@@ -470,13 +508,13 @@ namespace IA_Library
             {
                 current.Update(deltaTime);
             }
-            
+
             foreach (AgentScavenger current in Scavenger)
             {
                 current.Update(deltaTime);
             }
         }
-        
+
         public void Load()
         {
             manager.LoadAll(fileToLoad);
@@ -498,7 +536,8 @@ namespace IA_Library
             currentTurn = 0;
         }
 
-        #region  Getters
+        #region Getters
+
         public AgentPlant GetNearestPlantAgents(Vector2 position)
         {
             AgentPlant nearestPoint = Plants[0];
@@ -624,8 +663,6 @@ namespace IA_Library
 
             return sortedScavengers;
         }
-
-        
 
         #endregion
     }

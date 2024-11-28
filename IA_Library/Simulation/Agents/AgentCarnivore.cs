@@ -32,7 +32,7 @@ namespace IA_Library_FSM
                 {
                     return new object[]
                     {
-                        moveToFoodBrain.outputs, position, nearestFoodPosition, herbivore, onMove = MoveTo
+                        moveToFoodBrain.outputs, position, nearestFoodPosition, onMove = MoveTo, herbivore
                     };
                 });
 
@@ -43,10 +43,10 @@ namespace IA_Library_FSM
                     return new object[]
                     {
                         eatBrain.outputs, position, nearestFoodPosition,
-                        hasEaten, currentFood, maxFood,
+                        hasEaten, counterEating, maxFood,
                         onHasEantenEnoughFood = b =>
                             hasEaten = b,
-                        onEaten = i => currentFood = i,
+                        onEaten = i => counterEating = i,
                         herbivore
                     };
                 });
@@ -125,7 +125,7 @@ namespace IA_Library_FSM
             hasEaten = state;
         }
 
-        public override void AddFitnessToMain()
+        public override void ApplyFitness()
         {
             moveToFoodBrain.ApplyFitness();
             eatBrain.ApplyFitness();
@@ -177,7 +177,7 @@ namespace IA_Library_FSM
 
                 foreach (Vector2 direc in direction)
                 {
-                    onMove.Invoke(direc);
+                    onMove?.Invoke(direc);
                 }
 
                 List<Vector2> newPositions = new List<Vector2> { nearFoodPos };
@@ -236,10 +236,12 @@ namespace IA_Library_FSM
                         {
                             herbivore.EatPiece();
                             onEaten(++counterEating);
-                            brain.FitnessReward += 20;
+                            brain.FitnessReward += 30;
+                            brain.FitnessMultiplier += 0.30f;
                             if (counterEating >= maxEating)
                             {
-                                brain.FitnessReward += 30;
+                                brain.FitnessReward += 60;
+                                brain.FitnessMultiplier += 0.10f;
                                 onHasEatenEnoughFood.Invoke(true);
                             }
                         }

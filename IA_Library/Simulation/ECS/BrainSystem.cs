@@ -109,7 +109,7 @@ namespace IA_Library_ECS
                 a += inputLayerComponent[entity].layer.weights[neuron, i] * inputs[i];
             }
 
-            a += biasComponent[entity].X;
+            a += biasComponent[entity].X * inputLayerComponent[entity].layer.weights[neuron, inputs.Length - 1];
 
             return (float)Math.Tanh(a / sigmoidComponent[entity].X);
         }
@@ -123,7 +123,7 @@ namespace IA_Library_ECS
                 a += hiddenLayerComponent[entity].hiddenLayers[layer].weights[neuron, i] * inputs[i];
             }
 
-            a += biasComponent[entity].X;
+            a += biasComponent[entity].X * hiddenLayerComponent[entity].hiddenLayers[layer].weights[neuron, exclusive - 1];
 
             return (float)Math.Tanh(a / sigmoidComponent[entity].X);
         }
@@ -137,7 +137,7 @@ namespace IA_Library_ECS
                 a += outputLayerComponent[entity].layer.weights[neuron, i] * inputs[i];
             }
 
-            a += biasComponent[entity].X;
+            a += biasComponent[entity].X * outputLayerComponent[entity].layer.weights[neuron, exclusive - 1];;
 
             return (float)Math.Tanh(a / sigmoidComponent[entity].X);
         }

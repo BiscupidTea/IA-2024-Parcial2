@@ -65,10 +65,7 @@ namespace IA_Library
         {
             int arrayLength = BitConverter.ToInt32(data, currentOffset);
             currentOffset += sizeof(int);
-
-
             Genome[] genomes = new Genome[arrayLength];
-
 
             for (int i = 0; i < arrayLength; i++)
             {
@@ -172,7 +169,6 @@ namespace IA_Library
                 currentTotalFitness += g.fitness;
             }
 
-
             if (forceEvolve)
             {
                 data.generationStalled = 0;
@@ -192,31 +188,30 @@ namespace IA_Library
 
             data.totalFitness = currentTotalFitness;
             CalculateNeuronsToAdd(data.brainStructure);
-
-
             SelectElite(evolutionType, data.eliteCount);
+            
             while (newPopulation.Count < population.Count)
             {
                 Crossover(data, evolutionType);
             }
 
 
-            foreach (Genome gen in newPopulation)
-            {
-                switch (evolutionType)
-                {
-                    case EvolutionType.None:
-                        break;
-                    case EvolutionType.AddNeurons:
-                        EvolveChildNeurons(gen);
-                        break;
-                    case EvolutionType.AddLayer:
-                        EvolveChildLayer(gen);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(evolutionType), evolutionType, null);
-                }
-            }
+            // foreach (Genome gen in newPopulation)
+            // {
+            //     switch (evolutionType)
+            //     {
+            //         case EvolutionType.None:
+            //             break;
+            //         case EvolutionType.AddNeurons:
+            //             EvolveChildNeurons(gen);
+            //             break;
+            //         case EvolutionType.AddLayer:
+            //             EvolveChildLayer(gen);
+            //             break;
+            //         default:
+            //             throw new ArgumentOutOfRangeException(nameof(evolutionType), evolutionType, null);
+            //     }
+            // }
 
             switch (evolutionType)
             {
